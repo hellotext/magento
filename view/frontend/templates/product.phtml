@@ -1,0 +1,20 @@
+<?php
+/** @var \Magento\Catalog\Block\Product\View $block */
+/** @var \Magento\Framework\Escaper $escaper */
+$product = $block->getProductPayload();
+if (!$product) {
+    return;
+}
+$payload = json_encode(
+    $product,
+    JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+);
+$variants = $block->getVariantPayloads();
+$variantPayloads = json_encode(
+    $variants,
+    JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+);
+?>
+<span hidden
+      data-hellotext-product="<?= $escaper->escapeHtmlAttr($payload) ?>"
+      data-hellotext-variants="<?= $escaper->escapeHtmlAttr($variantPayloads) ?>"></span>

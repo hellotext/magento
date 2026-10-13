@@ -1,0 +1,9 @@
+<?php
+/** @var \Hellotext\Tracking\Block\Success $block */
+/** @var \Magento\Framework\Escaper $escaper */
+$reference = $block->getOrderReference();
+if ($reference === '') {
+    return;
+}
+?>
+<span hidden data-hellotext-order="<?= $escaper->escapeHtmlAttr($reference) ?>"></span>

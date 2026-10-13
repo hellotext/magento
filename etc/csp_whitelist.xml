@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<csp_whitelist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Csp:etc/csp_whitelist.xsd">
+    <policies>
+        <policy id="script-src">
+            <values>
+                <value id="hellotext-sdk" type="host">https://cdn.jsdelivr.net</value>
+            </values>
+        </policy>
+        <policy id="connect-src">
+            <values>
+                <value id="hellotext-production-api" type="host">https://api.hellotext.com</value>
+                <value id="hellotext-local-api" type="host">http://api.lvh.me:3100</value>
+                <value id="hellotext-isolated-api" type="host">http://api.lvh.me:3200</value>
+            </values>
+        </policy>
+    </policies>
+</csp_whitelist>

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin">
+                <resource id="Hellotext_Tracking::configure" title="Hellotext configuration" sortOrder="899"/>
+                <resource id="Hellotext_Tracking::delivery" title="Hellotext delivery" sortOrder="900"/>
+                <resource id="Hellotext_Tracking::catalog_read" title="Hellotext catalog read" sortOrder="901"/>
+                <resource id="Hellotext_Tracking::customer_read" title="Hellotext customer read" sortOrder="902"/>
+            </resource>
+        </resources>
+    </acl>
+</config>

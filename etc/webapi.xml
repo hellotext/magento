@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+    <route url="/V1/hellotext/catalog/products" method="GET">
+        <service class="Hellotext\Tracking\Api\CatalogManagementInterface" method="getProducts"/>
+        <resources><resource ref="Hellotext_Tracking::catalog_read"/></resources>
+    </route>
+    <route url="/V1/hellotext/customers" method="GET">
+        <service class="Hellotext\Tracking\Api\CustomerManagementInterface" method="getCustomers"/>
+        <resources><resource ref="Hellotext_Tracking::customer_read"/></resources>
+    </route>
+    <route url="/V1/hellotext/orders" method="GET">
+        <service class="Hellotext\Tracking\Api\OrderManagementInterface" method="getOrders"/>
+        <resources><resource ref="Hellotext_Tracking::delivery"/></resources>
+    </route>
+    <route url="/V1/hellotext/orders/:orderId" method="GET">
+        <service class="Hellotext\Tracking\Api\OrderManagementInterface" method="getOrder"/>
+        <resources><resource ref="Hellotext_Tracking::delivery"/></resources>
+    </route>
+    <route url="/V1/hellotext/configuration" method="POST">
+        <service class="Hellotext\Tracking\Api\ConfigurationManagementInterface" method="save"/>
+        <resources><resource ref="Hellotext_Tracking::configure"/></resources>
+    </route>
+    <route url="/V1/hellotext/status" method="GET">
+        <service class="Hellotext\Tracking\Api\StatusManagementInterface" method="getStatus"/>
+        <resources><resource ref="Magento_Backend::store"/></resources>
+    </route>
+</routes>
