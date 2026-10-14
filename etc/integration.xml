@@ -7,7 +7,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Integration:etc/integration/integration.xsd">
     <integration name="Hellotext">
-        <email>support@hellotext.com</email>
+        <email>info@hellotext.com</email>
         <endpoint_url>https://www.hellotext.com/oauth/magento/callback</endpoint_url>
         <identity_link_url>https://www.hellotext.com/magento/connect</identity_link_url>
         <resources>

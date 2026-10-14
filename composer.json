@@ -16,7 +16,7 @@
   ],
   "homepage": "https://www.hellotext.com",
   "support": {
-    "email": "support@hellotext.com",
+    "email": "info@hellotext.com",
     "docs": "https://github.com/hellotext/magento/blob/main/docs/getting-started.md"
   },
   "require": {

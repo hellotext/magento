@@ -33,7 +33,7 @@ Then follow [Connect Magento to Hellotext](docs/getting-started.md).
 
 ## Support
 
-Contact support@hellotext.com. When you write, include the output of `bin/magento hellotext:diagnose --store=<store-view-code>`. The command never prints credentials or customer data.
+Contact info@hellotext.com. When you write, include the output of `bin/magento hellotext:diagnose --store=<store-view-code>`. The command never prints credentials or customer data.
 
 ## Privacy and consent
 
