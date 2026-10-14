@@ -7,6 +7,16 @@
                 <value id="hellotext-sdk" type="host">https://cdn.jsdelivr.net</value>
             </values>
         </policy>
+        <policy id="style-src">
+            <values>
+                <value id="hellotext-assets" type="host">https://www.hellotext.com</value>
+            </values>
+        </policy>
+        <policy id="img-src">
+            <values>
+                <value id="hellotext-assets" type="host">https://www.hellotext.com</value>
+            </values>
+        </policy>
         <policy id="connect-src">
             <values>
                 <value id="hellotext-production-api" type="host">https://api.hellotext.com</value>
