@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Hellotext\Tracking\Plugin;
 
-use Hellotext\Tracking\Model\AnonymousSession;
 use Hellotext\Tracking\Model\CartPayload;
 use Hellotext\Tracking\Model\Configuration;
 use Hellotext\Tracking\Model\Reference;
@@ -22,7 +21,6 @@ class CartData
         private CustomerSession $customer,
         private ScopeConfigInterface $config,
         private StoreManagerInterface $stores,
-        private AnonymousSession $anonymous,
         private CookieHelper $cookies
     ) {}
 
@@ -32,7 +30,6 @@ class CartData
         try {
             // Magento's Cookie Restriction Mode: no tracking until the visitor allows cookies on this website.
             if ($this->cookies->isUserNotAllowSaveCookie()) {
-                $this->anonymous->reset();
                 return $result;
             }
             // Signed-in shoppers keep being tracked; the storefront identifies them by this ID only.
@@ -49,7 +46,6 @@ class CartData
             // A quote of another customer (or store) must never be reported for this visitor.
             if ((string) $quote->getStoreId() !== $storeId
                 || ($quote->getCustomerId() && (int) $quote->getCustomerId() !== $customerId)) {
-                $this->anonymous->reset();
                 return $result;
             }
             $currency = (string) ($quote->getQuoteCurrencyCode() ?: $store->getCurrentCurrencyCode());
@@ -72,11 +68,8 @@ class CartData
                 $rows[] = $row;
             }
             $items = CartPayload::items($rows, $installation, $storeId, $currency);
-            $session = $this->anonymous->id([$installation, $storeId, $business, $api, $currency], $quote->getId() ? (string) $quote->getId() : null);
             $result['hellotext'] = [
                 'enabled' => true,
-                'anonymous' => true,
-                'session' => $session,
                 'context' => ['businessId' => $business, 'apiRoot' => $api, 'installationId' => $installation, 'storeId' => $storeId, 'currency' => $currency],
                 'items' => $items,
                 'cart_ready' => true,

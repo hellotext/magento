@@ -1,11 +1,11 @@
 const assert = require('node:assert/strict');
+const { randomUUID } = require('node:crypto');
 const { readFileSync } = require('node:fs');
 const { resolve } = require('node:path');
 const { test } = require('node:test');
 const vm = require('node:vm');
 
 const source = resolve(__dirname, '../../../view/frontend/web/js');
-const anonymous = '12345678-1234-4234-8234-123456789012';
 const linked = 'AbC123xyAbC123xyAbC123xyAbC123xy';
 const flush = () => new Promise(resolve => setImmediate(resolve));
 
@@ -21,7 +21,7 @@ async function storefront({ urlSession, cookieSession, identity = null, enabled 
     const warnings = [];
     let subscription;
     const data = {
-        enabled, anonymous: true, session: anonymous, context: config, cart_ready: true, identity,
+        enabled, context: config, cart_ready: true, identity,
         checkout_reference: 'magento:store-one:checkout:42',
         items: [{
             product: { source: 'magento', reference: 'magento:store-one:product:11', name: 'Shirt', sku: 'SHIRT' },
@@ -42,12 +42,13 @@ async function storefront({ urlSession, cookieSession, identity = null, enabled 
         querySelectorAll: () => [],
         addEventListener() {}
     };
-    // The SDK contract: URL wins, then explicit configuration, then its cookie.
+    // The SDK owns URL/cookie selection and generates a UUID when neither exists.
     const sdk = {
         async initialize(business, options) {
             initializations.push(options);
             this.session = new URL(window.location.href).searchParams.get('hello_session')
                 || options.session || cookies.get('hello_session');
+            if (!this.session && options.autoGenerateSession !== false) { this.session = randomUUID(); }
             cookies.set('hello_session', this.session);
         },
         async track(action) { events.push({ action, session: this.session }); return { succeeded: true }; },
@@ -82,23 +83,25 @@ test('the URL session overrides an existing cookie and reaches checkout/cart tra
     assert.deepEqual(page.warnings, []);
 });
 
-test('navigation without the query keeps the SDK cookie instead of the private Magento session', async () => {
+test('navigation without the query keeps the SDK cookie without a Magento session', async () => {
     const page = await storefront({ cookieSession: linked });
     assert.equal(page.sdk.session, linked);
     assert.ok(page.events.length > 0);
     assert.ok(page.events.every(event => event.session === linked));
 });
 
-test('a fresh visitor still uses the generated anonymous fallback', async () => {
+test('a fresh visitor lets the SDK generate the session without a Magento session payload', async () => {
     const page = await storefront();
-    assert.equal(page.sdk.session, anonymous);
+    assert.match(page.sdk.session, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+    assert.equal(page.cookies.get('hello_session'), page.sdk.session);
+    assert.equal(Object.hasOwn(page.initializations[0], 'session'), false);
+    assert.equal(Object.hasOwn(page.initializations[0], 'autoGenerateSession'), false);
     assert.ok(page.events.length > 0);
-    assert.ok(page.events.every(event => event.session === anonymous));
+    assert.ok(page.events.every(event => event.session === page.sdk.session));
 });
 
 test('cart refresh and customer login keep the SDK-selected session', async () => {
     const page = await storefront({ urlSession: linked });
-    page.data.session = '22222222-2222-4222-8222-222222222222';
     page.data.identity = { customer_id: '7' };
     page.data.items[0].quantity = 2;
     await page.refresh();
@@ -106,6 +109,30 @@ test('cart refresh and customer login keep the SDK-selected session', async () =
     assert.equal(page.events.at(-1).action, 'cart.added');
     assert.ok(page.events.every(event => event.session === linked));
     assert.equal(page.initializations.length, 1);
+});
+
+test('customer logout clears identification while retaining the SDK-generated session', async () => {
+    const page = await storefront({ identity: { customer_id: '7' } });
+    const session = page.sdk.session;
+    page.data.identity = null;
+    page.data.items[0].quantity = 2;
+    await page.refresh();
+    assert.equal(page.cookies.has('hello_user_id'), false);
+    assert.equal(page.cookies.get('hello_session'), session);
+    assert.equal(page.events.at(-1).action, 'cart.added');
+    assert.ok(page.events.every(event => event.session === session));
+    assert.equal(page.initializations.length, 1);
+});
+
+test('cart refresh adopts a changed SDK cookie without a Magento session fallback', async () => {
+    const page = await storefront();
+    page.cookies.set('hello_session', linked);
+    await page.refresh();
+    assert.equal(page.sdk.session, linked);
+    assert.equal(page.initializations.length, 2);
+    assert.ok(page.events.slice(-2).every(event => event.session === linked));
+    assert.ok(page.storage.has('hellotext-magento-cart:business-one:' + linked));
+    assert.deepEqual(page.warnings, []);
 });
 
 test('the success-page event uses the SDK cookie', async () => {

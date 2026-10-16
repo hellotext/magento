@@ -16,4 +16,4 @@ Run the bridge behavior tests from this module's directory with Node.js 18 or ne
 node --test Test/Unit/Js/bridge.test.cjs
 ```
 
-These load the module's bridge and cart tracker with a stub of the SDK's URL/configuration/cookie precedence. A live storefront smoke test is still needed for DI compilation, browser cookies and the merchant's checkout configuration; see [checkout links](../docs/checkout-links.md).
+These load the module's bridge and cart tracker with a stub of the SDK's URL/cookie selection and UUID generation. They cover visitors with no Magento session payload, tracked links, cookie reuse and changes, and login/logout continuity. A live storefront smoke test is still needed for DI compilation, browser cookies and the merchant's checkout configuration; see [checkout links](../docs/checkout-links.md).
