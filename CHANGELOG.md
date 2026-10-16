@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added signed single and bulk stock availability reads under the existing catalog permission, using the selected website's Magento Inventory stock and native salability for standalone products, configurable parents and exact child variants.
+
 - Added a storefront handoff for carts prepared by Hellotext. Guest shoppers open the prepared basket directly; signed-in shoppers retain their existing items through Magento's native cart merge before being redirected to checkout.
 - Preserved tracked-link `hello_session` values through checkout redirects, storefront tracking, order placement and later order updates. The SDK cookie is the order's session source, and hashed session identifiers are retained alongside anonymous UUIDs.
 

@@ -11,6 +11,7 @@
             <module name="Magento_Cookie"/>
             <module name="Magento_Csp"/>
             <module name="Magento_Integration"/>
+            <module name="Magento_InventorySalesApi"/>
             <module name="Magento_Webapi"/>
             <module name="Magento_Newsletter"/>
             <module name="Magento_Backend"/>

@@ -2,6 +2,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <preference for="Hellotext\Tracking\Api\CatalogManagementInterface" type="Hellotext\Tracking\Model\CatalogManagement"/>
+    <preference for="Hellotext\Tracking\Api\StockManagementInterface" type="Hellotext\Tracking\Model\StockManagement"/>
     <preference for="Hellotext\Tracking\Api\CustomerManagementInterface" type="Hellotext\Tracking\Model\CustomerManagement"/>
     <preference for="Hellotext\Tracking\Api\OrderManagementInterface" type="Hellotext\Tracking\Model\OrderManagement"/>
     <preference for="Hellotext\Tracking\Api\StatusManagementInterface" type="Hellotext\Tracking\Model\StatusManagement"/>

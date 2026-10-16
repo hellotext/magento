@@ -5,6 +5,10 @@
         <service class="Hellotext\Tracking\Api\CatalogManagementInterface" method="getProducts"/>
         <resources><resource ref="Hellotext_Tracking::catalog_read"/></resources>
     </route>
+    <route url="/V1/hellotext/catalog/stock" method="GET">
+        <service class="Hellotext\Tracking\Api\StockManagementInterface" method="getStock"/>
+        <resources><resource ref="Hellotext_Tracking::catalog_read"/></resources>
+    </route>
     <route url="/V1/hellotext/customers" method="GET">
         <service class="Hellotext\Tracking\Api\CustomerManagementInterface" method="getCustomers"/>
         <resources><resource ref="Hellotext_Tracking::customer_read"/></resources>
