@@ -1,0 +1,70 @@
+name: Magento module checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  javascript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test Test/*.test.js Test/*.test.mjs
+      - run: git diff --check
+      - name: Parse Magento XML files
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import glob
+          import xml.etree.ElementTree as ET
+
+          files = glob.glob('etc/**/*.xml', recursive=True) + glob.glob('view/**/*.xml', recursive=True)
+          for filename in files:
+              ET.parse(filename)
+              print(f'parsed {filename}')
+          PY
+
+  php:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['8.2', '8.3']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          tools: composer:v2
+      - name: Lint PHP sources and isolated checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer validate --no-check-publish
+          find Api Block Console Model Observer Plugin Setup Test -name '*.php' -print0 | xargs -0 -n1 php -l
+          for test in Test/*.test.php; do php "$test"; done
+
+  coding-standard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+      # Adobe's Marketplace technical review rejects severity-10 violations; warnings are reported only.
+      - name: Magento coding standard (errors)
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer create-project --no-interaction --quiet magento/magento-coding-standard "$RUNNER_TEMP/mcs"
+          "$RUNNER_TEMP/mcs/vendor/bin/phpcs" --standard=Magento2 --severity=10 --extensions=php,phtml,xml \
+            Api Block Console Model Observer Plugin Setup etc view registration.php
