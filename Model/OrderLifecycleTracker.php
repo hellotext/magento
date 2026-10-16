@@ -64,8 +64,10 @@ class OrderLifecycleTracker
                 $actions[] = ['refund.received', Reference::build($installation, 'refund', $orderId)];
             }
 
+            // State and refund events of one order share its session, so it derives from the order reference.
+            $session = $this->session($order, $business, Reference::build($installation, 'order', $orderId));
             foreach ($actions as [$action, $reference]) {
-                $this->post($apiRoot, $business, $action, $reference, $this->session($order, $business, $reference));
+                $this->post($apiRoot, $business, $action, $reference, $session);
             }
         } catch (\Throwable) {
             // An analytics failure must never affect Magento order persistence.

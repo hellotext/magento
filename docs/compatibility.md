@@ -22,7 +22,9 @@ This is the production support baseline for page, product and anonymous cart eve
 - Generated Magento static assets must be rebuilt after changing module JavaScript.
 - Product and order references include the Magento installation and entity ID, not store-view IDs; one connection covers every view in its website.
 - FPC must be checked at the backend/cache-key level; response headers alone do not prove a HIT.
-- Swatches, custom configurable renderers, bundles, grouped/downloadable/virtual products and custom options require explicit mapping before support is claimed.
+- Swatches, custom configurable renderers, bundles, grouped/downloadable/virtual products, custom options and decimal quantities (**Qty Uses Decimals**) require explicit mapping before support is claimed.
+- `order.shipped` is reported when Magento marks the order complete; partial shipments are not reported separately.
+- Customer reads follow the default **Per Website** account sharing; **Global** customer sharing is not supported.
 - Adobe Marketplace credentials are not required when the module is installed from the reviewed package or repository checkout.
 - Consent-management behavior is merchant-specific and must be accepted before enabling analytics traffic.
 - Signed-in identification needs the identity setting Hellotext writes on connection; the private section carries only the customer ID.

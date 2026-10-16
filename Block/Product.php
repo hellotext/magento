@@ -13,7 +13,8 @@ class Product extends View
     public function getProductPayload($product = null): ?array
     {
         $product = $product ?? $this->getProduct();
-        if (!$product) {
+        // Only the types the catalog import maps; other types have no Hellotext product identity.
+        if (!$product || !in_array((string) $product->getTypeId(), ['simple', 'configurable'], true)) {
             return null;
         }
 

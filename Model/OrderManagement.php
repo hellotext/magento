@@ -209,7 +209,7 @@ class OrderManagement implements OrderManagementInterface
 
     private static function validText(?string $value, bool $nullable = false): bool
     {
-        return $value === null ? $nullable : $value !== '' && strlen($value) <= 255 && mb_check_encoding($value, 'UTF-8') &&
+        return $value === null ? $nullable : $value !== '' && mb_check_encoding($value, 'UTF-8') && mb_strlen($value, 'UTF-8') <= 255 &&
             preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', $value) !== 1;
     }
 

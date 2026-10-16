@@ -12,7 +12,7 @@
                     <label>Installation key</label>
                     <comment>A stable lowercase key (3–64 letters, numbers, hyphens or underscores). Use a different key per Magento installation. Changing it creates new tracking references.</comment>
                 </field>
-                <field id="business_id" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="business_id" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Public Business ID</label>
                     <comment>This public routing identifier is safe to expose in storefront events. Use the business configured for this Magento store.</comment>
                 </field>
