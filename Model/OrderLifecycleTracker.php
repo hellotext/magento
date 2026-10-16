@@ -64,7 +64,7 @@ class OrderLifecycleTracker
                 $actions[] = ['refund.received', Reference::build($installation, 'refund', $orderId)];
             }
 
-            // State and refund events of one order share its session, so it derives from the order reference.
+            // State and refund events reuse the session recorded when the order was placed.
             $session = $this->session($order, $business, Reference::build($installation, 'order', $orderId));
             foreach ($actions as [$action, $reference]) {
                 $this->post($apiRoot, $business, $action, $reference, $session);
@@ -122,7 +122,7 @@ class OrderLifecycleTracker
         // reused; an order placed elsewhere (Admin, API) gets one stable UUID instead of a new
         // anonymous session per change. Rails takes the attribution session from the snapshot.
         $placed = method_exists($order, 'getData') ? $order->getData('hellotext_session') : null;
-        if (is_string($placed) && preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $placed) === 1) {
+        if (is_string($placed) && $placed !== '') {
             return $placed;
         }
         $bytes = substr(hash('sha256', $business . "\0" . $reference, true), 0, 16);

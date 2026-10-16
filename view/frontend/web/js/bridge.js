@@ -21,8 +21,7 @@ define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker
 
         function safeBrowser() {
             if (stopped) { return false; }
-            if (new URL(window.location.href).searchParams.has('hello_session')
-                || hasForeignIdentityCookie()) {
+            if (hasForeignIdentityCookie()) {
                 stop();
                 return false;
             }
@@ -64,9 +63,7 @@ define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker
                 })
                 || !validIdentity(data.identity)
                 || !(data.checkout_reference == null || (typeof data.checkout_reference === 'string'
-                    && new RegExp('^magento:' + config.installationId + ':checkout:[1-9]\\d*$').test(data.checkout_reference)))
-                || (!hasExpectedSessionCookie(data.session) && !data.identity
-                    && cookieValue('hello_user_source') !== 'magento')) {
+                    && new RegExp('^magento:' + config.installationId + ':checkout:[1-9]\\d*$').test(data.checkout_reference)))) {
                 stop();
                 return null;
             }
@@ -89,18 +86,18 @@ define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker
         }
 
         function initializeSession(Hellotext, nextSession) {
-            session = nextSession;
             return Promise.resolve(Hellotext.initialize(config.businessId, {
                 apiRoot: config.apiRoot,
-                session: session,
+                // The SDK prefers the URL; keep its cookie ahead of Magento's anonymous fallback.
+                session: cookieValue('hello_session') || nextSession,
                 autoGenerateSession: false,
                 // Web push needs a service worker served from the store's own origin.
                 push: false
-            }));
+            })).then(function () { session = Hellotext.session; });
         }
 
         function synchronizeSession(Hellotext, data) {
-            if (sdk.session === data.session && hasExpectedSessionCookie(data.session)) {
+            if (sdk.session === session && hasExpectedSessionCookie(session)) {
                 return Promise.resolve(false);
             }
             var previousSession = session;

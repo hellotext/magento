@@ -23,6 +23,8 @@
 "Hellotext customer configuration is invalid for this website.","La configuración de clientes de Hellotext no es válida para este sitio web."
 "Order cutoff, cursor or limit is invalid.","La fecha límite, el cursor o el límite de pedidos no es válido."
 "Order ID is invalid.","El ID del pedido no es válido."
+"This checkout link is no longer available.","Este enlace de compra ya no está disponible."
+"We could not open this checkout. Please try again.","No pudimos abrir esta compra. Inténtalo de nuevo."
 "Order does not exist in this store.","El pedido no existe en esta tienda."
 "Order does not exist in this website.","El pedido no existe en este sitio web."
 "Order snapshot is unsupported or invalid.","Los datos del pedido no son compatibles o no son válidos."

@@ -150,7 +150,7 @@ class OrderManagement implements OrderManagementInterface
             throw new \InvalidArgumentException('invalid_refunded_total');
         }
         // Reuses placement's canonical physical-item mapping, including configurable child IDs.
-        $payload = OrderSnapshotPayload::fromOrder($order, $scope['installation_id'], self::session($order->getData('hellotext_session')));
+        $payload = OrderSnapshotPayload::fromOrder($order, $scope['installation_id'], $order->getData('hellotext_session'));
         if (count($payload['items']) > 500) {
             throw new \InvalidArgumentException('unsupported_item_count');
         }
@@ -172,13 +172,6 @@ class OrderManagement implements OrderManagementInterface
             'status' => $status,
             'refunded_total' => $refunded,
         ]));
-    }
-
-    // The storefront session recorded at placement; anything else is dropped rather than trusted.
-    private static function session(mixed $value): ?string
-    {
-        return is_string($value) && preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $value) === 1
-            ? $value : null;
     }
 
     private static function validTimestamp(string $value): bool
