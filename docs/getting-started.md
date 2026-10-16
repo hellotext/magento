@@ -78,7 +78,7 @@ One Hellotext business can have one active Magento website connection. If the we
 Before the store receives real orders through Hellotext, the developer should validate the order flow on a staging store first. The module reports order changes as they happen; nothing needs Magento cron. Obtain the store owner's approval for the data being transferred.
 
 - **Signed-in customer identification** identifies a signed-in shopper by their Magento customer ID, which Hellotext checks against the website's customers. Their browsing before signing in stays linked. This does not verify a guest's email or subscribe a customer to marketing.
-- **Orders** are read from the store: past orders when the connection completes, then each new order and each later change, including confirmation, shipment, cancellation and refunds. Each order keeps the browsing session that placed it. It does not depend on the browser reaching a thank-you page. The mapping covers core physical simple/configurable items, not virtual, mixed-virtual or other unsupported order types.
+- **Orders** are read from the store: past orders when the connection completes, then each new order and each later change, including confirmation, shipment, cancellation and refunds. Each order keeps the browsing session that placed it. A new storefront order is reported when its thank-you page loads. If the shopper closes the browser first, it is reported at its next status change, so an order waiting in its first status (for example an offline payment not yet received) may not appear until then. The mapping covers core physical simple/configurable items, not virtual, mixed-virtual or other unsupported order types.
 
 ## 5. Imports
 
