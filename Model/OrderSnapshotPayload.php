@@ -51,5 +51,5 @@ class OrderSnapshotPayload
     private static function positive(mixed $value, string $field): string { $value = (string) $value; if (preg_match('/^[1-9][0-9]*$/', $value) !== 1) throw new \InvalidArgumentException('invalid_' . $field); return $value; }
     private static function quantity(mixed $value): int { $value = (string) $value; if (preg_match('/^[1-9][0-9]*(?:\.0+)?$/', $value) !== 1) throw new \InvalidArgumentException('invalid_quantity'); return (int) $value; }
     private static function money(mixed $value): string { $value = (string) $value; if (preg_match('/^\d+(?:\.\d{1,8})?$/', $value) !== 1) throw new \InvalidArgumentException('invalid_money'); return $value; }
-    private static function optional(mixed $value): ?string { $value = trim((string) $value); return $value === '' ? null : substr($value, 0, 255); }
+    private static function optional(mixed $value): ?string { $value = trim((string) $value); return $value === '' ? null : mb_substr($value, 0, 255, 'UTF-8'); }
 }

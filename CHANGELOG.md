@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Truncate buyer names in order snapshots by UTF-8 characters, preserving valid multibyte names during order history imports.
+
 - Let Hellotext.js select or generate the storefront session. Removed Magento's anonymous-session generator, private cart session fields and logout reset hook; order attribution continues to read the SDK's `hello_session` cookie.
 
 - Added signed single and bulk stock availability reads under the existing catalog permission, using the selected website's Magento Inventory stock and native salability for standalone products, configurable parents and exact child variants.
