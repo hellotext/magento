@@ -12,7 +12,7 @@ You need:
 - A Magento administrator who can manage integrations.
 - Shell access to the Magento server (or a developer who has it) to run Composer and `bin/magento`, and deploy static assets.
 - An HTTPS storefront and Magento API reachable by Hellotext, with a valid trusted certificate.
-- Magento Open Source 2.4.7-p10, PHP 8.2–8.3 and Luma; other combinations need review before rollout.
+- Magento Open Source 2.4.7-p10 and PHP 8.2–8.3; other combinations need review before rollout.
 - Approval of the store's analytics, personal-data and consent policies. The extension does not replace a consent-management platform.
 
 The developer should first install and validate the extension in a staging store with a separate Hellotext business. They must check that the browser can load the Hellotext.js asset from jsDelivr and reach the Hellotext API without disabling security protections.

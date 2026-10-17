@@ -6,10 +6,9 @@ Hellotext for Magento 2 connects one Magento website to one Hellotext business. 
 
 - Magento Open Source 2.4.7 (tested on 2.4.7-p10)
 - PHP 8.2 or 8.3
-- Luma theme
 - An HTTPS storefront with a valid certificate, and a Magento REST API that Hellotext can reach
 
-Other Magento versions, editions and themes are supported only after they have been tested.
+Other Magento versions and editions are supported only after they have been tested.
 
 ## Install
 
