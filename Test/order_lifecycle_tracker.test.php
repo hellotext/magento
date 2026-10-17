@@ -39,7 +39,10 @@ namespace Magento\Framework\HTTP\Client {
 namespace Magento\Store\Model { interface ScopeInterface { public const SCOPE_STORE = 'store'; } }
 
 namespace Magento\Framework\App {
-    class Area { public const AREA_ADMINHTML = 'adminhtml'; }
+    class Area {
+        public const AREA_ADMINHTML = 'adminhtml';
+        public const AREA_FRONTEND = 'frontend';
+    }
     class State {
         public ?string $area = 'adminhtml';
         public function getAreaCode(): string {
@@ -159,23 +162,31 @@ namespace {
     $assert($refund['object_parameters'] === ['reference' => 'magento:magento-local:refund:21', 'source' => 'magento'], 'A native refund must use its canonical reference only.');
     $assert($refund['session'] === $sessions[0], 'A refund must reuse its order session.');
     $assert(count($curls->clients) === $before + 3, 'A changed refunded total must call the tracking API.');
-    // An order created in this request is being placed: storefront checkout never waits on Hellotext.
+    // Frontend placement relies on the success page; API and Admin requests report through the observer.
     $order->refundChanged = false;
     $order->stateChanged = true;
     $order->loaded = false;
     $count = count($curls->clients);
-    foreach (['frontend', 'webapi_rest', 'graphql', null] as $area) {
+    foreach (['frontend', null] as $area) {
         $appState->area = $area;
         $tracker->track($order);
     }
-    $assert(count($curls->clients) === $count, 'Checkout placement must not call the tracking API.');
-    $appState->area = 'adminhtml';
-    $tracker->track($order);
-    $assert(count($curls->clients) === $count + 1, 'An Admin order has no success page and must be reported.');
+    $assert(count($curls->clients) === $count, 'Frontend placement and an unset area must remain suppressed.');
+    foreach (['webapi_rest', 'webapi_soap', 'graphql', 'adminhtml'] as $area) {
+        $appState->area = $area;
+        foreach (['new' => 'order.placed', 'processing' => 'order.confirmed'] as $state => $action) {
+            $order->state = $state;
+            $tracker->track($order);
+            $assert(count($curls->clients) === ++$count, "A new {$area} order in {$state} must report exactly one event.");
+            $payload = json_decode((string) $curls->clients[array_key_last($curls->clients)]->body, true, flags: JSON_THROW_ON_ERROR);
+            $assert($payload['action'] === $action, "Unexpected action for a new {$area} order in {$state}.");
+            $assert($payload['session'] === $sessions[0], "Session handling changed for a new {$area} order.");
+        }
+    }
     $order->loaded = true;
     $appState->area = 'frontend';
     $tracker->track($order);
-    $assert(count($curls->clients) === $count + 2, 'A later change in any area must be reported.');
+    $assert(count($curls->clients) === $count + 1, 'A later change in any area must be reported.');
 
     $globalEvents = file_get_contents(__DIR__ . '/../etc/events.xml');
     $frontendEvents = file_get_contents(__DIR__ . '/../etc/frontend/events.xml');
