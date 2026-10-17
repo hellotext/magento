@@ -18,7 +18,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node --test Test/*.test.js Test/*.test.mjs
+      - run: node --test Test/*.test.js Test/*.test.mjs Test/Unit/Js/*.test.cjs
       - name: Check committed whitespace
         env:
           DIFF_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
@@ -43,23 +43,48 @@ jobs:
 
   php:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: module
     strategy:
       fail-fast: false
       matrix:
         php-version: ['8.2', '8.3']
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: module
+      - uses: actions/checkout@v4
+        with:
+          repository: magento/magento2
+          ref: 2.4.7-p10
+          path: magento
+      - uses: actions/checkout@v4
+        with:
+          repository: magento/inventory
+          ref: 1.2.7-p10
+          path: inventory
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
+          extensions: bcmath, curl, dom, gd, intl, mbstring, pdo_mysql, soap, sodium, xsl, zip
           tools: composer:v2
       - name: Lint PHP sources and isolated checks
         shell: bash
         run: |
           set -euo pipefail
           composer validate --no-check-publish
-          find Api Block Console Model Observer Plugin Setup Test -name '*.php' -print0 | xargs -0 -n1 php -l
+          find Api Block Console Controller Model Observer Plugin Setup Test view registration.php \( -name '*.php' -o -name '*.phtml' \) -print0 | xargs -0 -n1 php -l
           for test in Test/*.test.php; do php "$test"; done
+      - name: Install Magento unit test dependencies
+        run: |
+          cp -R ../inventory/InventoryApi ../inventory/InventorySalesApi ../magento/app/code/Magento/
+          mkdir -p ../magento/app/code/Hellotext
+          ln -s "$GITHUB_WORKSPACE/module" ../magento/app/code/Hellotext/Tracking
+          composer --working-dir=../magento install --no-interaction --prefer-dist --no-progress
+      - name: Run PHPUnit against Magento 2.4.7-p10
+        working-directory: magento
+        run: vendor/bin/phpunit -c dev/tests/unit/phpunit.xml.dist app/code/Hellotext/Tracking/Test/Unit
 
   coding-standard:
     runs-on: ubuntu-latest
@@ -76,4 +101,4 @@ jobs:
           set -euo pipefail
           composer create-project --no-interaction --quiet magento/magento-coding-standard "$RUNNER_TEMP/mcs"
           "$RUNNER_TEMP/mcs/vendor/bin/phpcs" --standard=Magento2 --severity=10 --extensions=php,phtml,xml \
-            Api Block Console Model Observer Plugin Setup etc view registration.php
+            Api Block Console Controller Model Observer Plugin Setup etc view registration.php

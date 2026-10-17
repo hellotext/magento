@@ -4,7 +4,7 @@
 
 ## Supported-scope checklist
 
-- [ ] The change is within the documented anonymous storefront analytics scope.
+- [ ] The change is within the documented storefront tracking and signed API scope.
 - [ ] Public product data and private cart data remain separated.
 - [ ] API-root validation, CSP and browser checks were updated together when relevant.
 - [ ] Magento native checkout remains fail-open and no synchronous remote call was added.

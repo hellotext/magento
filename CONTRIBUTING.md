@@ -9,12 +9,12 @@ Every PR should state the user-visible behavior, the security and cache implicat
 ## Local checks
 
 ```bash
-node --test Test/*.test.js Test/*.test.mjs
+node --test Test/*.test.js Test/*.test.mjs Test/Unit/Js/*.test.cjs
 for test in Test/*.test.php; do php "$test"; done
 composer validate --no-check-publish
 ```
 
-The PHP checks use small Magento stubs for mapping and guard logic; they do not replace an installation smoke test on a real Magento store.
+The standalone PHP checks use small Magento stubs for mapping and guard logic. Also run the PHPUnit suite against Magento's real classes as described in [Test/README.md](Test/README.md). CI runs both suites on PHP 8.2 and 8.3, plus all JavaScript tests. These checks do not replace an installation smoke test on a real Magento store.
 
 ## Commit and review expectations
 
