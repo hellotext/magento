@@ -42,13 +42,24 @@ class CartData
             if ($business === '' || !Configuration::isSafeApiRoot($api)) {
                 return $result;
             }
+            $currency = (string) $store->getCurrentCurrencyCode();
+            $result['hellotext'] = [
+                'enabled' => true,
+                'context' => ['businessId' => $business, 'apiRoot' => $api, 'installationId' => $installation, 'storeId' => $storeId, 'currency' => $currency],
+                'items' => [],
+                'cart_ready' => false,
+                'checkout_reference' => null,
+                'identity' => $customerId > 0 && $this->config->isSetFlag('hellotext/tracking/identity_enabled', ScopeInterface::SCOPE_STORE, $storeId)
+                    ? ['customer_id' => (string) $customerId]
+                    : null,
+            ];
             $quote = $this->checkout->getQuote();
             // A quote of another customer (or store) must never be reported for this visitor.
             if ((string) $quote->getStoreId() !== $storeId
                 || ($quote->getCustomerId() && (int) $quote->getCustomerId() !== $customerId)) {
                 return $result;
             }
-            $currency = (string) ($quote->getQuoteCurrencyCode() ?: $store->getCurrentCurrencyCode());
+            $currency = (string) ($quote->getQuoteCurrencyCode() ?: $currency);
             $rows = [];
             foreach ($quote->getAllVisibleItems() as $item) {
                 $row = $this->product($item);
@@ -68,21 +79,14 @@ class CartData
                 $rows[] = $row;
             }
             $items = CartPayload::items($rows, $installation, $storeId, $currency);
-            $result['hellotext'] = [
-                'enabled' => true,
-                'context' => ['businessId' => $business, 'apiRoot' => $api, 'installationId' => $installation, 'storeId' => $storeId, 'currency' => $currency],
-                'items' => $items,
-                'cart_ready' => true,
-                'checkout_reference' => $quote->getId()
-                    ? Reference::build($installation, 'checkout', (int) $quote->getId())
-                    : null,
-                'identity' => $customerId > 0 && $this->config->isSetFlag('hellotext/tracking/identity_enabled', ScopeInterface::SCOPE_STORE, $storeId)
-                    ? ['customer_id' => (string) $customerId]
-                    : null,
-            ];
+            $reference = $quote->getId()
+                ? Reference::build($installation, 'checkout', (int) $quote->getId())
+                : null;
+            $result['hellotext']['items'] = $items;
+            $result['hellotext']['cart_ready'] = true;
+            $result['hellotext']['checkout_reference'] = $reference;
         } catch (\Throwable $error) {
-            // Optional analytics must not break Magento cart/checkout or expose private error data.
-            $result['hellotext'] = ['enabled' => false];
+            // Keep tracking enabled when only the cart could not be serialized.
         }
         return $result;
     }

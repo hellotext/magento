@@ -12,7 +12,7 @@ vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../view/frontend/web/js
     define: (_deps, factory) => { realCartTracker = factory(); }, console, Promise
 });
 
-function harness({ cookie = '', query = '', sections, offline = false, rejectReinitialize = false, productReference = 'magento:local:product:1' } = {}) {
+function harness({ cookie = '', query = '', sections, offline = false, rejectReinitialize = false, rejectInitialData = false, productReference = 'magento:local:product:1' } = {}) {
     const events = [];
     const carts = [];
     const subscriptions = {};
@@ -48,7 +48,7 @@ function harness({ cookie = '', query = '', sections, offline = false, rejectRei
         track: async (action) => { events.push(action); return { failed: false }; }
     };
     const customerData = {
-        getInitCustomerData: () => Promise.resolve(),
+        getInitCustomerData: () => rejectInitialData ? Promise.reject(new Error('initial cart unavailable')) : Promise.resolve(),
         get: (name) => ({ subscribe: (fn) => { subscriptions[name] = fn; } }),
         reload: async (names, force) => {
             reloads++;
@@ -74,6 +74,7 @@ function harness({ cookie = '', query = '', sections, offline = false, rejectRei
         events, carts, document, sdk,
         reloads: () => reloads, loads: () => loads,
         fresh: (value) => { fresh = value; },
+        setOffline: (value) => { offline = value; },
         notify: (name, value) => subscriptions[name]?.(value)
     };
 }
@@ -114,10 +115,8 @@ for (const query of ['?hello_session=other', '?hello_session=', '?hello%5fsessio
 }
 for (const [name, data] of Object.entries({
     disabled: { enabled: false },
-    missing: null,
     'missing context': { enabled: true, cart_ready: true, identity: null, items: [] },
-    'invalid identity': { enabled: true, cart_ready: true, context, identity: { customer_id: '0' }, items: [] },
-    'invalid items': { enabled: true, cart_ready: true, context, identity: null, items: [{}] }
+    'invalid identity': { enabled: true, cart_ready: true, context, identity: { customer_id: '0' }, items: [] }
 })) {
     test(`does not load SDK for ${name} private state`, async () => {
         const h = harness({ sections: { cart: { hellotext: data } } });
@@ -125,11 +124,45 @@ for (const [name, data] of Object.entries({
         assert.equal(h.loads(), 0);
     });
 }
-test('private reload failure stops tracking without impacting native cart', async () => {
+for (const [name, data] of Object.entries({
+    missing: null,
+    'invalid items': { enabled: true, cart_ready: true, context, identity: null, items: [{}] },
+    'invalid cart readiness': { enabled: true, cart_ready: 'unknown', context, identity: null, items: [] },
+    'invalid checkout reference': { enabled: true, cart_ready: true, context, identity: null, items: [], checkout_reference: 'invalid' }
+})) {
+    test(`keeps page and product tracking when the cart has ${name}`, async () => {
+        const h = harness({ sections: { cart: { hellotext: data } } });
+        await settle();
+        assert.equal(h.loads(), 1);
+        assert.deepEqual(h.events, ['page.viewed', 'product.viewed']);
+        assert.equal(h.carts.length, 0);
+    });
+}
+test('a failed cart reload does not stop tracking or prevent a later refresh', async () => {
     const h = harness({ offline: true });
     await settle();
-    assert.equal(h.loads(), 0);
-    assert.equal(h.events.length, 0);
+    assert.equal(h.loads(), 1);
+    assert.deepEqual(h.events, ['page.viewed', 'product.viewed']);
+    assert.equal(h.carts.length, 0);
+
+    h.setOffline(false);
+    h.notify('cart', {});
+    await settle();
+    assert.equal(h.carts.length, 1);
+    assert.equal(h.sdk.session, generatedSession);
+});
+test('continues tracking when initial customer-data loading fails', async () => {
+    const h = harness({ rejectInitialData: true });
+    await settle();
+    assert.deepEqual(h.events, ['page.viewed', 'product.viewed']);
+    assert.equal(h.carts.length, 1);
+});
+test('an unavailable cart does not clear the existing identity', async () => {
+    const h = harness({ offline: true, cookie: 'hello_user_id=42; hello_user_source=magento' });
+    await settle();
+    assert.deepEqual(h.events, ['page.viewed', 'product.viewed']);
+    assert.ok(h.document.cookie.includes('hello_user_id=42'));
+    assert.ok(h.document.cookie.includes('hello_user_source=magento'));
 });
 test('refreshes Magento identity after login while preserving the SDK session', async () => {
     const h = harness();
@@ -223,12 +256,13 @@ test('allows its matching session cookie across navigation', async () => {
 for (const [reference, currency] of [
     ['magento:other:product:1', 'USD'], ['magento:local:product:1', 'EUR']
 ]) {
-    test('rejects a cart item outside the bound product namespace or currency before SDK load', async () => {
+    test('skips a cart outside the product namespace or currency while tracking the page and product', async () => {
         const items = [{ quantity: 1, price: { amount: '19.99', currency }, product: { reference, source: 'magento', sku: 'ITEM', name: 'Item' } }];
         const h = harness({ sections: { cart: { hellotext: { enabled: true, cart_ready: true, context, identity: null, items } }, customer: {} } });
         await settle();
-        assert.equal(h.loads(), 0);
-        assert.deepEqual(h.events, []);
+        assert.equal(h.loads(), 1);
+        assert.deepEqual(h.events, ['page.viewed', 'product.viewed']);
+        assert.equal(h.carts.length, 0);
     });
 }
 

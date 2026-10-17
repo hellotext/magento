@@ -82,4 +82,21 @@ class CartDataTest extends TestCase
 
         self::assertSame(['enabled' => false], $result['hellotext']);
     }
+
+    /** @dataProvider customers */
+    public function testUnavailableCartKeepsTrackingAndCustomerIdentity(int $customerId): void
+    {
+        $this->customer->method('isLoggedIn')->willReturn($customerId > 0);
+        $this->customer->method('getCustomerId')->willReturn($customerId);
+        $this->checkout->method('getQuote')->willThrowException(new \RuntimeException('Cart unavailable'));
+
+        $result = $this->subject->afterGetSectionData($this->createMock(Cart::class), ['summary_count' => 0]);
+
+        self::assertSame(0, $result['summary_count']);
+        self::assertTrue($result['hellotext']['enabled']);
+        self::assertFalse($result['hellotext']['cart_ready']);
+        self::assertSame([], $result['hellotext']['items']);
+        self::assertNull($result['hellotext']['checkout_reference']);
+        self::assertSame($customerId > 0 ? ['customer_id' => (string) $customerId] : null, $result['hellotext']['identity']);
+    }
 }

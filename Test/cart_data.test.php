@@ -61,6 +61,11 @@ namespace {
     $plugin = new \Hellotext\Tracking\Plugin\CartData($checkout, $customer, $config, $stores, $cookies);
     $read = fn() => $plugin->afterGetSectionData(new \Magento\Checkout\CustomerData\Cart(), ['items' => ['native-preserved']]);
     $assert = function ($value) { if (!$value) { throw new \RuntimeException('Private cart assertion failed.'); } };
+    $assertUnavailableCart = function () use ($read, $assert) {
+        $data = $read()['hellotext'];
+        $assert($data['enabled'] === true && $data['cart_ready'] === false);
+        $assert($data['items'] === [] && $data['checkout_reference'] === null);
+    };
     $data = $read();
     $assert($data['items'] === ['native-preserved'] && $data['hellotext']['items'] === [] && $data['hellotext']['enabled']);
     $assert(!array_key_exists('session', $data['hellotext']) && !array_key_exists('anonymous', $data['hellotext']));
@@ -87,14 +92,14 @@ namespace {
     $config->identity = true;
     // Another customer's quote is never reported for this visitor.
     $quote->customer = 7;
-    $assert($read()['hellotext'] === ['enabled' => false]);
+    $assertUnavailableCart();
     $customer->loggedIn = false;
     $quote->customer = 42;
-    $assert($read()['hellotext'] === ['enabled' => false]);
+    $assertUnavailableCart();
     $quote->customer = null;
     $assert($read()['hellotext']['identity'] === null);
     $quote->store = 2;
-    $assert($read()['hellotext'] === ['enabled' => false]);
+    $assertUnavailableCart();
     $quote->store = 1;
     $config->api = 'https://api.hellotext.com/v1';
     $assert($read()['hellotext']['enabled'] === true);
@@ -114,7 +119,7 @@ namespace {
     $quote->items = [$item];
     $assert($read()['hellotext']['items'][0]['product']['reference'] === 'magento:magento-local:product:7');
     $item->additional = true;
-    $assert($read()['hellotext'] === ['enabled' => false]);
+    $assertUnavailableCart();
     $quote->items = [];
     $assert($checkout->data === []);
     $assert(array_keys($read()['hellotext']) === ['enabled', 'context', 'items', 'cart_ready', 'checkout_reference', 'identity']);

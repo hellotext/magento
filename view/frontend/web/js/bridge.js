@@ -35,20 +35,23 @@ define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker
 
         function safeSection(sections) {
             var data = sections && sections.cart && sections.cart.hellotext;
-            if (stopped || !data || data.enabled !== true
+            if (!data) { return null; }
+            if (stopped || data.enabled !== true
                 || !data.context || !['businessId', 'apiRoot', 'installationId', 'storeId', 'currency'].every(function (key) {
                     return typeof data.context[key] === 'string' && data.context[key] === config[key];
                 })
-                || typeof data.cart_ready !== 'boolean'
+                || !validIdentity(data.identity)) {
+                stop();
+                return null;
+            }
+            if (typeof data.cart_ready !== 'boolean'
                 || !createCartTracker.validItems(data.items)
                 || !data.items.every(function (item) {
                     return matchesProductContext(item.product) && item.price.currency === config.currency;
                 })
-                || !validIdentity(data.identity)
                 || !(data.checkout_reference == null || (typeof data.checkout_reference === 'string'
                     && new RegExp('^magento:' + config.installationId + ':checkout:[1-9]\\d*$').test(data.checkout_reference)))) {
-                stop();
-                return null;
+                return Object.assign({}, data, { cart_ready: false });
             }
             return data;
         }
@@ -102,8 +105,7 @@ define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker
             }).then(function (sections) {
                 return safeSection(sections);
             }).catch(function () {
-                stop();
-                console.warn('Hellotext Magento: private cart unavailable; tracking stopped');
+                console.warn('Hellotext Magento: private cart unavailable; skipping cart tracking');
                 return null;
             }).finally(function () { refresh = null; });
             return refresh;
@@ -155,7 +157,7 @@ define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker
         }
 
         function trackCheckoutStarted(Hellotext, data) {
-            if (!config.checkoutStarted || !data.cart_ready || !data.items.length || !data.checkout_reference) {
+            if (!config.checkoutStarted || !data || !data.cart_ready || !data.items.length || !data.checkout_reference) {
                 return false;
             }
             var storage;
@@ -186,13 +188,12 @@ define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker
             });
 
             ready.then(readCurrentCart).then(function (current) {
-                if (!current) { return; }
+                if (stopped) { return; }
                 return synchronizeSession(Hellotext).then(function () { return current; });
             }).then(function (current) {
-                if (!current) { return; }
                 return identifyCurrent(Hellotext, current).then(function () { return current; });
             }).then(function (current) {
-                if (!current || !isActive()) { return; }
+                if (!isActive()) { return; }
                 // The SDK does not automatically emit page.viewed.
                 Promise.resolve().then(function () {
                     if (isActive()) {
@@ -210,11 +211,11 @@ define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker
                 }
                 trackCheckoutStarted(Hellotext, current);
                 cartTracker = createCartTracker(Hellotext, isActive, storage, 'hellotext-magento-cart:' + config.businessId + ':' + session);
-                if (current.cart_ready) { cartTracker(current.items); }
+                if (current && current.cart_ready) { cartTracker(current.items); }
                 customerData.get('cart').subscribe(function () {
                     if (!refresh) {
                         readCurrentCart().then(function (data) {
-                            if (!data) { return; }
+                            if (stopped) { return; }
                             var sessionChanged;
                             return synchronizeSession(Hellotext).then(function (changed) {
                                 sessionChanged = changed;
@@ -224,7 +225,7 @@ define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker
                                     return Hellotext.track('page.viewed', { object_parameters: { source: 'magento' } });
                                 }
                             }).then(function () {
-                                if (isActive() && data.cart_ready) { cartTracker(data.items); }
+                                if (isActive() && data && data.cart_ready) { cartTracker(data.items); }
                                 if (sessionChanged && refreshProductTracking) { refreshProductTracking(); }
                             }).catch(function () {
                                 console.warn('Hellotext Magento: private cart refresh failed');
@@ -278,7 +279,7 @@ define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker
                     return Promise.resolve().then(function () {
                         return readCurrentCart();
                     }).then(function (data) {
-                        if (!data) { return; }
+                        if (stopped) { return; }
                         var sessionChanged;
                         return synchronizeSession(Hellotext).then(function (changed) {
                             sessionChanged = changed;
@@ -330,6 +331,7 @@ define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker
         }
 
         function identifyCurrent(Hellotext, current) {
+            if (!current) { return Promise.resolve(); }
             var identity = current.identity;
             var currentId = cookieValue('hello_user_id');
             var currentSource = cookieValue('hello_user_source');
@@ -343,8 +345,8 @@ define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker
             }).catch(function () { console.warn('Hellotext Magento: customer identification failed'); });
         }
 
-        Promise.resolve(customerData.getInitCustomerData()).then(readCurrentCart).then(function (data) {
-            if (!data) { return; }
+        Promise.resolve(customerData.getInitCustomerData()).then(readCurrentCart, readCurrentCart).then(function () {
+            if (stopped) { return; }
             if (window.Hellotext) {
                 start(window.Hellotext);
             } else {

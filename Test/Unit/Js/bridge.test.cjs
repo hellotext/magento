@@ -9,7 +9,7 @@ const source = resolve(__dirname, '../../../view/frontend/web/js');
 const linked = 'AbC123xyAbC123xyAbC123xyAbC123xy';
 const flush = () => new Promise(resolve => setImmediate(resolve));
 
-async function storefront({ urlSession, cookieSession, identity = null, enabled = true, order = null } = {}) {
+async function storefront({ urlSession, cookieSession, identity = null, enabled = true, order = null, offline = false, invalidItems = false } = {}) {
     const config = {
         businessId: 'business-one', installationId: 'store-one', storeId: '1', currency: 'USD',
         apiRoot: 'https://api.hellotext.com/v1', checkoutStarted: true
@@ -28,6 +28,7 @@ async function storefront({ urlSession, cookieSession, identity = null, enabled 
             quantity: 1, price: { amount: '25.00', currency: 'USD' }
         }]
     };
+    if (invalidItems) { data.items = [{}]; }
     const window = {
         location: { href: 'https://shop.example/checkout/' + (urlSession ? '?hello_session=' + urlSession : '') },
         sessionStorage: {
@@ -57,7 +58,7 @@ async function storefront({ urlSession, cookieSession, identity = null, enabled 
     };
     const customerData = {
         getInitCustomerData: () => Promise.resolve(),
-        reload: () => Promise.resolve({ cart: { hellotext: data } }),
+        reload: () => offline ? Promise.reject(new Error('cart unavailable')) : Promise.resolve({ cart: { hellotext: data } }),
         get: () => ({ subscribe(callback) { subscription = callback; } })
     };
     let createCartTracker;
@@ -70,7 +71,9 @@ async function storefront({ urlSession, cookieSession, identity = null, enabled 
         console: { warn: (...args) => warnings.push(args) }
     });
     await flush();
-    return { sdk, data, cookies, storage, events, initializations, warnings, refresh: async () => { subscription(); await flush(); } };
+    return { sdk, data, cookies, storage, events, initializations, warnings,
+        setOffline: value => { offline = value; },
+        refresh: async () => { subscription(); await flush(); } };
 }
 
 test('the URL session overrides an existing cookie and reaches checkout/cart tracking', async () => {
@@ -138,6 +141,33 @@ test('cart refresh adopts a changed SDK cookie without a Magento session fallbac
 test('the success-page event uses the SDK cookie', async () => {
     const page = await storefront({ cookieSession: linked, order: 'magento:store-one:order:99' });
     assert.deepEqual(page.events.find(event => event.action === 'order.placed'), { action: 'order.placed', session: linked });
+});
+
+for (const failure of [{ offline: true }, { invalidItems: true }]) {
+    test(`tracks the success-page order despite ${Object.keys(failure)[0]}`, async () => {
+        const page = await storefront({ cookieSession: linked, order: 'magento:store-one:order:99', ...failure });
+        assert.deepEqual(page.events.map(event => event.action).sort(), ['order.placed', 'page.viewed']);
+        assert.ok(page.events.every(event => event.session === linked));
+    });
+}
+
+test('cart failures preserve the last snapshot and allow later cart updates', async () => {
+    const page = await storefront({ cookieSession: linked });
+    const before = page.events.length;
+    page.setOffline(true);
+    await page.refresh();
+    assert.equal(page.events.length, before);
+
+    page.setOffline(false);
+    const items = page.data.items;
+    page.data.items = [{}];
+    await page.refresh();
+    assert.equal(page.events.length, before);
+
+    page.data.items = items;
+    page.data.items[0].quantity = 2;
+    await page.refresh();
+    assert.deepEqual(page.events.slice(before), [{ action: 'cart.added', session: linked }]);
 });
 
 test('a disabled private section still prevents SDK initialization', async () => {
