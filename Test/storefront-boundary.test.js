@@ -93,12 +93,14 @@ test('waits for fresh native private content before initialization and product/c
     assert.equal(h.carts.length, 2);
 });
 
-for (const cookie of ['hello_user_id=123', 'x=y; hello_user_source=shopify', 'hello_user_identification_hash=abc']) {
-    test(`fails closed without deleting inherited identity: ${cookie.split('=')[0]}`, async () => {
+for (const cookie of ['hello_user_id=123', 'x=y; hello_user_source=shopify', 'hello_user_identification_hash=abc', 'hello_user_id=123; hello_user_source=shopify']) {
+    test(`tracks without changing existing identity cookies: ${cookie}`, async () => {
         const h = harness({ cookie });
         await settle();
-        assert.equal(h.loads(), 0);
-        assert.equal(h.document.cookie, cookie);
+        assert.equal(h.loads(), 1);
+        assert.deepEqual(h.events, ['page.viewed', 'product.viewed']);
+        assert.equal(h.carts.length, 1);
+        assert.ok(cookie.split('; ').every(value => h.document.cookie.split('; ').includes(value)));
     });
 }
 for (const query of ['?hello_session=other', '?hello_session=', '?hello%5fsession=other']) {
@@ -179,13 +181,15 @@ test('contains SDK reinitialization failure after its cookie changes', async () 
 
     assert.equal(h.carts.length, 1);
 });
-test('foreign inherited identity permanently stops subsequent snapshots', async () => {
+test('keeps tracking cart snapshots when identity cookies change', async () => {
     const h = harness();
     await settle();
     h.document.cookie = 'hello_user_id=other';
+    h.document.cookie = 'hello_user_source=shopify';
     h.notify('cart', {});
     await settle();
-    assert.equal(h.carts.length, 1);
+    assert.equal(h.carts.length, 2);
+    assert.equal(h.sdk.session, generatedSession);
 });
 
 for (const field of ['businessId', 'apiRoot', 'installationId', 'storeId', 'currency']) {

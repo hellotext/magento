@@ -19,26 +19,10 @@ define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker
             stopped = true;
         }
 
-        function safeBrowser() {
-            if (stopped) { return false; }
-            if (hasForeignIdentityCookie()) {
-                stop();
-                return false;
-            }
-            return true;
-        }
-
         function cookieValue(name) {
             var match = document.cookie.match(new RegExp('(?:^|;\\s*)' + name + '=([^;]*)'));
             if (!match) { return null; }
             try { return decodeURIComponent(match[1]); } catch (error) { return null; }
-        }
-
-        function hasForeignIdentityCookie() {
-            var id = cookieValue('hello_user_id');
-            var source = cookieValue('hello_user_source');
-            var fingerprint = cookieValue('hello_user_identification_hash');
-            return Boolean((id || source || fingerprint) && source !== 'magento');
         }
 
         // Only the signed-in customer's ID: Hellotext verifies it against the store and reads the profile there.
@@ -51,7 +35,7 @@ define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker
 
         function safeSection(sections) {
             var data = sections && sections.cart && sections.cart.hellotext;
-            if (!safeBrowser() || !data || data.enabled !== true
+            if (stopped || !data || data.enabled !== true
                 || !data.context || !['businessId', 'apiRoot', 'installationId', 'storeId', 'currency'].every(function (key) {
                     return typeof data.context[key] === 'string' && data.context[key] === config[key];
                 })
@@ -81,7 +65,7 @@ define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker
 
         function isActive() {
             if (sdk && (sdk.session !== session || !hasExpectedSessionCookie(session))) { stop(); }
-            return safeBrowser() && sdk && sdk.session === session;
+            return !stopped && sdk && sdk.session === session;
         }
 
         function initializeSession(Hellotext) {
@@ -193,7 +177,7 @@ define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker
         function start(Hellotext) {
             var trackedReferences = {};
 
-            if (!safeBrowser()) { stop(); return; }
+            if (stopped) { return; }
             if (Hellotext.business) {
                 console.warn('Hellotext Magento: existing SDK API root cannot be verified');
                 return;
@@ -201,7 +185,7 @@ define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker
             sdk = Hellotext;
 
             var ready = Promise.resolve().then(function () {
-                if (!safeBrowser()) { stop(); return; }
+                if (stopped) { return; }
                 return initializeSession(Hellotext);
             });
 
@@ -368,7 +352,6 @@ define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker
             return;
         }
 
-        if (!safeBrowser()) { return; }
         Promise.resolve(customerData.getInitCustomerData()).then(readCurrentCart).then(function (data) {
             if (!data) { return; }
             require([sdkUrl], function (Hellotext) { start(Hellotext); }, function () {
