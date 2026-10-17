@@ -22,7 +22,6 @@ Open **Settings → Integrations → Magento** in Hellotext and follow the comma
 | --- | --- |
 | Connect a store and import records | [Getting started](docs/getting-started.md) |
 | Open prepared carts in the storefront | [Checkout links](docs/checkout-links.md) |
-| Check product and variant availability | [Stock availability](docs/stock-availability.md) |
 | Diagnose problems | [Troubleshooting](docs/troubleshooting.md) |
 | Report a security issue | [Security policy](SECURITY.md) |
 | Changes between versions | [Changelog](CHANGELOG.md) |
