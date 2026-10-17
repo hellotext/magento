@@ -1,4 +1,4 @@
-# Hellotext for Magento 2
+# Hellotext for Magento
 
 Connect your Magento store to Hellotext to track storefront activity and orders, identify customers, import your catalog, and display your Hellotext popups, webchat, WhatsApp widget and forms.
 
