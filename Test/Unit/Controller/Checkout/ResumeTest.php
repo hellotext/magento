@@ -5,6 +5,7 @@ namespace Hellotext\Tracking\Test\Unit\Controller\Checkout;
 
 use Hellotext\Tracking\Controller\Checkout\Resume;
 use Hellotext\Tracking\Model\Checkout\Resume as ResumeCheckout;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\Result\Redirect;
 use Magento\Framework\Controller\Result\RedirectFactory;
@@ -13,6 +14,7 @@ use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Stdlib\Cookie\CookieMetadata;
 use Magento\Framework\Stdlib\Cookie\CookieMetadataFactory;
 use Magento\Framework\Stdlib\CookieManagerInterface;
+use Magento\Store\Model\ScopeInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
@@ -23,6 +25,7 @@ class ResumeTest extends TestCase
     private $redirect;
     private $messages;
     private $cookies;
+    private ScopeConfigInterface $config;
     private $logger;
     private Resume $subject;
 
@@ -33,6 +36,7 @@ class ResumeTest extends TestCase
         $this->redirect = $this->createMock(Redirect::class);
         $this->messages = $this->createMock(ManagerInterface::class);
         $this->cookies = $this->createMock(CookieManagerInterface::class);
+        $this->config = $this->createMock(ScopeConfigInterface::class);
         $this->logger = $this->createMock(LoggerInterface::class);
 
         $redirects = $this->createMock(RedirectFactory::class);
@@ -42,17 +46,22 @@ class ResumeTest extends TestCase
         $metadata->method('createCookieMetadata')->willReturn(new CookieMetadata());
 
         $this->subject = new Resume(
-            $this->request, $this->checkout, $redirects, $this->messages, $this->cookies, $metadata, $this->logger
+            $this->request, $this->checkout, $redirects, $this->messages, $this->cookies, $metadata, $this->config, $this->logger
         );
     }
 
-    public function testPreparedCartRedirectsToSecureCheckoutAndRefreshesPrivateCartData(): void
+    /** @dataProvider cookieDomains */
+    public function testPreparedCartRedirectsToSecureCheckoutAndRefreshesPrivateCartData(?string $domain): void
     {
         $id = str_repeat('a', 32);
         $this->request->method('getParam')->willReturnMap([['cart', null, $id]]);
         $this->checkout->expects(self::once())->method('execute')->with($id);
+        $this->config->expects(self::once())->method('getValue')
+            ->with('web/cookie/cookie_domain', ScopeInterface::SCOPE_STORE)->willReturn($domain);
         $this->cookies->expects(self::once())->method('deleteCookie')->with(
-            'mage-cache-sessid', self::callback(static fn(CookieMetadata $metadata): bool => $metadata->getPath() === '/')
+            'mage-cache-sessid', self::callback(static fn(CookieMetadata $metadata): bool =>
+                $metadata->getPath() === '/' && $metadata->getDomain() === (string) $domain
+            )
         );
         $this->redirect->expects(self::exactly(2))->method('setHeader')->withConsecutive(
             ['Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0', true],
@@ -62,6 +71,16 @@ class ResumeTest extends TestCase
         $this->messages->expects(self::never())->method('addErrorMessage');
 
         self::assertSame($this->redirect, $this->subject->execute());
+    }
+
+    public static function cookieDomains(): array
+    {
+        return [
+            'parent domain' => ['.example.com'],
+            'store domain' => ['shop.example.com'],
+            'empty domain' => [''],
+            'unset domain' => [null],
+        ];
     }
 
     public function testUnavailableCartRedirectsToTheBasketWithoutInvalidatingIt(): void

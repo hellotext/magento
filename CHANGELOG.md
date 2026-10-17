@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Clear the customer-data cache cookie using the configured store cookie domain and the root path after checkout handoff.
+
 - Use Magento's configured secure base URL for both requests in the `hellotext:connect` OAuth linking flow.
 
 - Measure imported customer text by UTF-8 characters so valid localized names are preserved up to the 255-character limit.

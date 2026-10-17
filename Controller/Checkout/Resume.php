@@ -5,6 +5,7 @@ namespace Hellotext\Tracking\Controller\Checkout;
 
 use Hellotext\Tracking\Model\Checkout\Resume as ResumeCheckout;
 use Magento\Framework\App\Action\HttpGetActionInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\Result\Redirect;
 use Magento\Framework\Controller\Result\RedirectFactory;
@@ -12,6 +13,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Stdlib\Cookie\CookieMetadataFactory;
 use Magento\Framework\Stdlib\CookieManagerInterface;
+use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
 
 class Resume implements HttpGetActionInterface
@@ -23,6 +25,7 @@ class Resume implements HttpGetActionInterface
         private ManagerInterface $messages,
         private CookieManagerInterface $cookies,
         private CookieMetadataFactory $cookieMetadata,
+        private ScopeConfigInterface $config,
         private LoggerInterface $logger
     ) {}
 
@@ -43,7 +46,9 @@ class Resume implements HttpGetActionInterface
 
             // A GET redirect does not trigger Magento's POST invalidation.
             // Clear the browser's cached cart and checkout data before checkout.
-            $metadata = $this->cookieMetadata->createCookieMetadata()->setPath('/');
+            $metadata = $this->cookieMetadata->createCookieMetadata()
+                ->setPath('/')
+                ->setDomain((string) $this->config->getValue('web/cookie/cookie_domain', ScopeInterface::SCOPE_STORE));
             $this->cookies->deleteCookie('mage-cache-sessid', $metadata);
 
             return $result->setPath('checkout', $redirectParams);
