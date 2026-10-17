@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Use Magento's configured secure base URL for both requests in the `hellotext:connect` OAuth linking flow.
+
 - Measure imported customer text by UTF-8 characters so valid localized names are preserved up to the 255-character limit.
 
 - Truncate buyer names in order snapshots by UTF-8 characters, preserving valid multibyte names during order history imports.

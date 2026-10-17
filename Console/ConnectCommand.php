@@ -9,6 +9,7 @@ use Magento\Framework\App\Area;
 use Magento\Framework\App\State;
 use Magento\Framework\HTTP\Client\CurlFactory;
 use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Framework\UrlInterface;
 use Magento\Integration\Api\IntegrationServiceInterface;
 use Magento\Integration\Api\OauthServiceInterface;
 use Magento\Integration\Model\Integration;
@@ -77,7 +78,7 @@ class ConnectCommand extends Command
             return Command::FAILURE;
         }
 
-        $storeBaseUrl = (string) $this->stores->getStore(0)->getBaseUrl();
+        $storeBaseUrl = (string) $this->stores->getStore(0)->getBaseUrl(UrlInterface::URL_TYPE_LINK, true);
         $outcome = $this->post($endpoint, ConnectLink::checkFields($storeBaseUrl, $code));
         if ($outcome !== 'linked') {
             $output->writeln(self::MESSAGES[$outcome]);
