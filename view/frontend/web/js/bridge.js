@@ -178,10 +178,6 @@ define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker
             var trackedReferences = {};
 
             if (stopped) { return; }
-            if (Hellotext.business) {
-                console.warn('Hellotext Magento: existing SDK API root cannot be verified');
-                return;
-            }
             sdk = Hellotext;
 
             var ready = Promise.resolve().then(function () {
@@ -347,17 +343,16 @@ define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker
             }).catch(function () { console.warn('Hellotext Magento: customer identification failed'); });
         }
 
-        if (window.Hellotext) {
-            console.warn('Hellotext Magento: existing SDK API root cannot be verified');
-            return;
-        }
-
         Promise.resolve(customerData.getInitCustomerData()).then(readCurrentCart).then(function (data) {
             if (!data) { return; }
-            require([sdkUrl], function (Hellotext) { start(Hellotext); }, function () {
-                window.hellotextMagentoStarted = false;
-                console.warn('Hellotext Magento could not load the SDK');
-            });
+            if (window.Hellotext) {
+                start(window.Hellotext);
+            } else {
+                require([sdkUrl], function (Hellotext) { start(Hellotext); }, function () {
+                    window.hellotextMagentoStarted = false;
+                    console.warn('Hellotext Magento could not load the SDK');
+                });
+            }
         });
     };
 });

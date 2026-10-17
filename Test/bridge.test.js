@@ -337,82 +337,62 @@ test('contains a synchronous SDK initialization failure and releases the page lo
     assert.equal(window.hellotextMagentoStarted, false);
 });
 
-test('does not track through a same-business global SDK with an unknown API root', async () => {
-    const calls = [];
-    let initialize;
-    const sdk = {
-        business: { id: 'public-business' },
-        track: async (action) => { calls.push(action); }
-    };
-    runBridge({
-        window: { Hellotext: sdk },
-        document: {
-            querySelector: () => { throw new Error('Must not read product'); },
-            querySelectorAll: () => []
-        },
-        console: { warn: () => { calls.push('warn'); } },
-        Promise,
-        URL,
-        setTimeout,
-        require: () => { throw new Error('Must not load a duplicate SDK'); },
-        define: (_deps, factory) => { initialize = factory(); }
+for (const businessId of [undefined, 'public-business', 'other-business']) {
+    test(`reuses a global SDK with the store configuration after ${businessId || 'no'} initialization`, async () => {
+        const calls = [];
+        let initialize;
+        const sdk = {
+            business: businessId ? { id: businessId } : undefined,
+            initialize: async (id, options) => {
+                calls.push(['initialize', id, options]);
+                sdk.session = anonymousSession;
+            },
+            track: async (action) => { calls.push(['track', action]); }
+        };
+        runBridge({
+            window: { Hellotext: sdk },
+            document: { querySelector: () => null, querySelectorAll: () => [] },
+            console: { warn: () => { calls.push(['warn']); } },
+            Promise,
+            URL,
+            setTimeout,
+            require: () => { throw new Error('Must not load a duplicate SDK'); },
+            define: (_deps, factory) => { initialize = factory(); }
+        });
+
+        initialize({ businessId: 'public-business', apiRoot: 'http://api.lvh.me:3100/v1' });
+        await new Promise(setImmediate);
+        assert.equal(calls[0][0], 'initialize');
+        assert.equal(calls[0][1], 'public-business');
+        assert.equal(calls[0][2].apiRoot, 'http://api.lvh.me:3100/v1');
+        assert.deepEqual(calls.slice(1), [['track', 'page.viewed']]);
     });
+}
 
-    initialize({ businessId: 'public-business', apiRoot: 'http://api.lvh.me:3100/v1' });
-    await new Promise(setImmediate);
-    assert.deepEqual(calls, ['warn']);
-});
-
-test('does not track through a pre-initialized AMD SDK with an unknown API root', async () => {
+test('tracks through an already initialized AMD SDK using the store configuration', async () => {
     let initialize;
     const calls = [];
     runBridge({
         window: {},
-        document: {
-            querySelector: () => { throw new Error('Must not read product'); },
-            querySelectorAll: () => []
-        },
-        console: { warn: () => { calls.push('warn'); } },
+        document: { querySelector: () => null, querySelectorAll: () => [] },
+        console: { warn: () => { calls.push(['warn']); } },
         Promise,
         URL,
         setTimeout,
         require: (_deps, callback) => callback({
             business: { id: 'public-business' },
-            track: async () => { calls.push('track'); }
+            initialize: async (id, options) => { calls.push(['initialize', id, options]); },
+            track: async (action) => { calls.push(['track', action]); }
         }),
         define: (_deps, factory) => { initialize = factory(); }
     });
 
     initialize({ businessId: 'public-business', apiRoot: 'http://api.lvh.me:3100/v1' });
     await new Promise(setImmediate);
-    assert.deepEqual(calls, ['warn']);
-});
-
-test('refuses to track through an SDK initialized for another business', async () => {
-    let initialize;
-    const calls = [];
-    runBridge({
-        window: {
-            Hellotext: {
-                business: { id: 'other-business' },
-                track: async () => { calls.push('track'); }
-            }
-        },
-        document: {
-            querySelector: () => { throw new Error('Must not read product'); },
-            querySelectorAll: () => []
-        },
-        console: { warn: () => { calls.push('warn'); } },
-        Promise,
-        URL,
-        setTimeout,
-        require: () => { throw new Error('Must not load a duplicate SDK'); },
-        define: (_deps, factory) => { initialize = factory(); }
-    });
-
-    initialize({ businessId: 'public-business', apiRoot: 'http://api.lvh.me:3100/v1' });
-    await new Promise(setImmediate);
-    assert.deepEqual(calls, ['warn']);
+    assert.equal(calls[0][0], 'initialize');
+    assert.equal(calls[0][1], 'public-business');
+    assert.equal(calls[0][2].apiRoot, 'http://api.lvh.me:3100/v1');
+    assert.deepEqual(calls.slice(1), [['track', 'page.viewed']]);
 });
 
 test('reports a success-page order by its canonical reference only, once per order', async () => {
