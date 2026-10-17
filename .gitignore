@@ -1,0 +1,16 @@
+.DS_Store
+node_modules/
+vendor/
+tmp/
+generated/
+var/
+auth.json
+auth.json.*
+.env
+.env.*
+!.env.example
+*.log
+*.key
+*.csr
+*.crt
+*.pem

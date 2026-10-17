@@ -24,12 +24,12 @@ Check, in order:
 
 1. the page is a secure context;
 2. the API root passed validation and matches the CSP/CORS configuration;
-3. no other Hellotext SDK initialized first;
-4. the page is not checkout, payment or success;
-5. the browser can load the SDK asset from jsDelivr;
-6. the private cart/customer-data request completed successfully.
+3. the page is not checkout, payment or success;
+4. the browser can load the SDK asset from jsDelivr when it is not already loaded.
 
-The bridge should warn and stop optional tracking rather than break Magento.
+The bridge reuses an existing `window.Hellotext` and initializes it with the store's configured business and API root.
+
+Unavailable or invalid cart data skips cart tracking without stopping page, product or success-page order events. Later cart refreshes can recover without reloading the page. An explicitly disabled section still stops tracking, including when Magento's Cookie Restriction Mode denies consent.
 
 ## No cart event is persisted
 

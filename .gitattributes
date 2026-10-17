@@ -1,0 +1,7 @@
+# Only the Magento module is distributed (Packagist/Composer dist archives and Marketplace zips built with
+# `git archive`). Tests, CI and contributor files stay in the repository.
+/.github export-ignore
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/CONTRIBUTING.md export-ignore
+/Test export-ignore

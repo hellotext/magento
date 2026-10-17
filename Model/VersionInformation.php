@@ -7,8 +7,8 @@ use Magento\Framework\App\ProductMetadataInterface;
 
 class VersionInformation
 {
-    // The storefront follows the latest 2.x release; the exact version is whatever jsDelivr serves.
-    public const SDK_VERSION = '2.x';
+    // The storefront follows the latest release; the exact version is whatever jsDelivr serves.
+    public const SDK_VERSION = 'latest';
 
     public function __construct(private ProductMetadataInterface $magento) {}
 

@@ -10,7 +10,7 @@ Compatibility is a tested contract, not an assumption from a successful module i
 | PHP | 8.2–8.3 |
 | Theme | Luma |
 | Browser runtime | Secure context with RequireJS/AMD support |
-| Hellotext.js | Latest 2.x, followed through jsDelivr |
+| Hellotext.js | Latest release, followed through jsDelivr |
 | API root | `https://api.hellotext.com/v1` |
 
 This is the production support baseline for page, product and anonymous cart events. It does not claim support for Adobe Commerce, other Magento versions, custom themes, Varnish or alternate proxy topologies.
@@ -18,7 +18,7 @@ This is the production support baseline for page, product and anonymous cart eve
 ## Known constraints
 
 - Hellotext.js requires a secure browser context; plain `lvh.me` HTTP is not a representative storefront runtime.
-- The bridge loads the latest 2.x SDK from jsDelivr at runtime, so SDK releases reach stores without a module release. The public API the bridge uses (`business`, `session`, `identify`, `track`) must stay stable within 2.x, and jsDelivr and browsers cache the resolved file (a rollback of a bad release may need a purge). CDN availability and merchant CSP/network policy are release gates: verify the asset loads in browser Network. An approved owned asset is an alternative only after changing the bridge/CSP and revalidating it; this package does not provide one.
+- The bridge loads the latest SDK from the unversioned jsDelivr URL at runtime, so SDK releases, including new major versions, reach stores without a module release. The status endpoint reports `latest` rather than a fixed SDK version. The public API the bridge uses (`business`, `session`, `identify`, `track`) must remain compatible, and jsDelivr and browsers cache the resolved file (a rollback of a bad release may need a purge). CDN availability and merchant CSP/network policy are release gates: verify the asset loads in browser Network. An approved owned asset is an alternative only after changing the bridge/CSP and revalidating it; this package does not provide one.
 - Generated Magento static assets must be rebuilt after changing module JavaScript.
 - Product and order references include the Magento installation and entity ID, not store-view IDs; one connection covers every view in its website.
 - FPC must be checked at the backend/cache-key level; response headers alone do not prove a HIT.

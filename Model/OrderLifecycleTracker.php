@@ -96,16 +96,15 @@ class OrderLifecycleTracker
         }
     }
 
-    // Magento sets an order's original data only when it loads one, so an order without it was created in
-    // this request. Storefront checkout must not wait on Hellotext: its success page reports the order.
-    // An Admin order has no success page, so it is reported here.
+    // An order without original data was created in this request. Only the frontend area relies on
+    // the success page to report placement; API and Admin requests are reported here.
     private function placedInCheckout(object $order): bool
     {
         if (!method_exists($order, 'getOrigData') || $order->getOrigData('entity_id') !== null) {
             return false;
         }
         try {
-            return $this->appState->getAreaCode() !== Area::AREA_ADMINHTML;
+            return $this->appState->getAreaCode() === Area::AREA_FRONTEND;
         } catch (\Throwable) {
             return true;
         }
