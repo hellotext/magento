@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Measure imported customer text by UTF-8 characters so valid localized names are preserved up to the 255-character limit.
+
 - Truncate buyer names in order snapshots by UTF-8 characters, preserving valid multibyte names during order history imports.
 
 - Let Hellotext.js select or generate the storefront session. Removed Magento's anonymous-session generator, private cart session fields and logout reset hook; order attribution continues to read the SDK's `hello_session` cookie.

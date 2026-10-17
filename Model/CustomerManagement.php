@@ -103,11 +103,11 @@ class CustomerManagement implements CustomerManagementInterface
         );
     }
 
-    private static function safeText(mixed $value, int $maxBytes): ?string
+    private static function safeText(mixed $value, int $maxCharacters): ?string
     {
         if (!is_string($value)) return null;
         $value = trim($value);
-        if ($value === '' || strlen($value) > $maxBytes || !mb_check_encoding($value, 'UTF-8') || preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', $value)) {
+        if ($value === '' || !mb_check_encoding($value, 'UTF-8') || mb_strlen($value, 'UTF-8') > $maxCharacters || preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', $value)) {
             return null;
         }
         return $value;
