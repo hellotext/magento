@@ -1,0 +1,42 @@
+Hellotext Tracking Module License
+
+Copyright (c) 2026 Electronic Mobile S.A. (Hellotext). All rights reserved.
+
+1. Grant. Hellotext grants you a non-exclusive, non-transferable, royalty-free
+   license to install and run this software (the "Module") on Magento stores
+   that you own or operate, and only in connection with a Hellotext account
+   that you are authorized to use.
+
+2. Source access and changes. You may read the source code and make changes
+   that you need to adapt the Module to your own stores. Your changes remain
+   subject to this license, and the Module's copyright notices must stay in
+   place.
+
+3. Restrictions. You may not, without Hellotext's written permission:
+   a. sell, sublicense, rent, publish or otherwise distribute the Module or any
+      work derived from it, except as part of a backup or deployment of your
+      own stores;
+   b. use the Module, or code taken from it, to build or operate a product or
+      service that competes with Hellotext;
+   c. remove or bypass the Module's authentication, scope or privacy
+      protections, or use it to collect data from stores you do not operate.
+
+4. Third-party software. The Module runs on Magento and Adobe Commerce and
+   depends on their components, which are licensed to you by their owners
+   under their own terms. This license does not change those terms.
+
+5. Termination. This license ends automatically if you breach it or when your
+   right to use Hellotext ends. You must then stop using the Module and
+   uninstall it (`bin/magento module:uninstall Hellotext_Tracking
+   --remove-data`).
+
+6. No warranty. THE MODULE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR
+   A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
+
+7. Limitation of liability. TO THE MAXIMUM EXTENT PERMITTED BY LAW, HELLOTEXT IS
+   NOT LIABLE FOR ANY INDIRECT, INCIDENTAL OR CONSEQUENTIAL DAMAGES, OR FOR LOST
+   PROFITS OR DATA, ARISING FROM THE USE OF THE MODULE. Your use of Hellotext's
+   services is governed by the agreement you accepted with Hellotext.
+
+Questions about this license: info@hellotext.com

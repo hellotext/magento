@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Hellotext\Tracking\Api\CatalogManagementInterface" type="Hellotext\Tracking\Model\CatalogManagement"/>
+    <preference for="Hellotext\Tracking\Api\StockManagementInterface" type="Hellotext\Tracking\Model\StockManagement"/>
+    <preference for="Hellotext\Tracking\Api\CustomerManagementInterface" type="Hellotext\Tracking\Model\CustomerManagement"/>
+    <preference for="Hellotext\Tracking\Api\OrderManagementInterface" type="Hellotext\Tracking\Model\OrderManagement"/>
+    <preference for="Hellotext\Tracking\Api\StatusManagementInterface" type="Hellotext\Tracking\Model\StatusManagement"/>
+    <preference for="Hellotext\Tracking\Api\ConfigurationManagementInterface" type="Hellotext\Tracking\Model\ConfigurationManagement"/>
+    <type name="Magento\Integration\Model\ConsolidatedConfig">
+        <plugin name="hellotextIntegrationEndpoints" type="Hellotext\Tracking\Plugin\IntegrationEndpointsOverride"/>
+    </type>
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="hellotextDiagnose" xsi:type="object">Hellotext\Tracking\Console\DiagnoseCommand</item>
+                <item name="hellotextConnect" xsi:type="object">Hellotext\Tracking\Console\ConnectCommand</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

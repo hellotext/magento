@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <hellotext>
+            <tracking>
+                <business_id></business_id>
+                <api_root>https://api.hellotext.com/v1</api_root>
+                <identity_enabled>0</identity_enabled>
+            </tracking>
+        </hellotext>
+    </default>
+</config>

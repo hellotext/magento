@@ -1,0 +1,21 @@
+<?php
+/** @var \Hellotext\Tracking\Block\Init $block */
+/** @var \Magento\Framework\Escaper $escaper */
+$businessId = $block->getBusinessId();
+$apiRoot = $block->getApiRoot();
+if (!$block->hasSafeConfig()) {
+    return;
+}
+$config = json_encode(
+    ['Hellotext_Tracking/js/bridge' => [
+        'businessId' => $businessId,
+        'apiRoot' => $apiRoot,
+        'installationId' => $block->getInstallationId(),
+        'storeId' => $block->getTrackingStoreId(),
+        'currency' => $block->getTrackingCurrency(),
+        'checkoutStarted' => $block->isCheckoutStartedPage(),
+    ]],
+    JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+);
+?>
+<span hidden data-mage-init="<?= $escaper->escapeHtmlAttr($config) ?>"></span>
