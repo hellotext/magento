@@ -1,21 +1,7 @@
-## Summary
+## Change
 
-<!-- What changed and why? Link the issue or contract. -->
+<!-- Describe the problem and resulting behavior. -->
 
-## Supported-scope checklist
+## Testing
 
-- [ ] The change is within the documented storefront tracking and signed API scope.
-- [ ] Public product data and private cart data remain separated.
-- [ ] API-root validation, CSP and browser checks were updated together when relevant.
-- [ ] Magento native checkout remains fail-open and no synchronous remote call was added.
-- [ ] Tests cover the changed behavior and important negative cases.
-- [ ] Documentation and the changelog match the shipped behavior.
-- [ ] Manual validation was run for storefront, cart and cache behavior when relevant.
-
-## Verification
-
-<!-- List exact commands, CI checks and any manual Network/worker evidence. -->
-
-## Rollout and rollback
-
-<!-- Note configuration, static asset, cache and rollback considerations. -->
+<!-- Describe how you verified the change. -->

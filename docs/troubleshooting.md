@@ -1,44 +1,51 @@
 # Troubleshooting
 
-## Installation or delivery status is unclear
+## Diagnose the connection
 
-Run `php bin/magento hellotext:diagnose --store=<store-view-code>` in the Magento root. Use `--ping` only when PHP-to-API reachability matters; it does not test the browser-to-API or Rails-to-Magento paths. A loopback-bound local API can be unreachable from PHP without breaking either.
+Run this from your Magento installation directory:
 
-A reachable API root is only a transport check, not proof that OAuth, the Rails worker or storefront tracking works.
+```sh
+bin/magento hellotext:diagnose --store=<store-view-code>
+```
 
-## The Hellotext integration is missing or reset
+It reports the module version, integration status and configuration. Add `--ping` to check whether the Magento server can reach the Hellotext API.
 
-`hellotext:diagnose` prints `integration: missing` until `setup:upgrade` runs. On stores with compiled DI, also run `setup:di:compile`; otherwise the development URL override is ignored. `recreated` means a module release or an `env.php` override changed the integration: choose **Reauthorize** in System → Integrations. The old OAuth consumer row stays in the database without an integration and cannot authenticate.
+## Hellotext is missing from Magento Integrations
 
-## The connection stays in "Verifying" with a settings warning
+Run `bin/magento setup:upgrade`. In production mode, also run `bin/magento setup:di:compile`.
 
-Rails could not call `POST /V1/hellotext/configuration`: the module is missing, outdated or unreachable. Update the module, run `setup:upgrade`, then use **Apply settings again** on the connection page. Do not copy values into Magento Admin to work around it.
+If the integration is marked **Recreated**, choose **Reauthorize** under **System → Extensions → Integrations**.
 
-## The browser runs old JavaScript
+## Connection or authorization fails
 
-Magento may serve generated static assets after source changes. Remove only the affected generated module asset or rerun static-content deployment, then verify the browser Network response and its content hash against the source file.
+| Problem | Action |
+| --- | --- |
+| Link code refused or expired | Reload the Magento setup page in Hellotext and run the new `hellotext:connect` command. |
+| Hellotext window does not open | Allow popups for Magento Admin and choose **Activate** or **Reauthorize** again. |
+| Magento cannot be reached | Check the store's public HTTPS URL, certificate and firewall access to its API. |
+| Hellotext cannot apply settings | Update the module, run `setup:upgrade`, then choose **Apply settings again** in Hellotext. |
 
-## The SDK does not initialize
+## No storefront activity
 
-Check, in order:
+Check the browser console and Network panel for blocked requests to jsDelivr or the Hellotext API. Confirm that the page uses HTTPS and the store's CSP permits those requests.
 
-1. the page is a secure context;
-2. the API root passed validation and matches the CSP/CORS configuration;
-3. the page is not checkout, payment or success;
-4. the browser can load the SDK asset from jsDelivr when it is not already loaded.
+When Magento Cookie Restriction Mode is enabled, tracking waits for consent. Custom storefronts must retain Magento's RequireJS initialization and `Magento_Customer/js/customer-data` support for the tracking bridge to load.
 
-The bridge reuses an existing `window.Hellotext` and initializes it with the store's configured business and API root.
+## Old JavaScript after an update
 
-Unavailable or invalid cart data skips cart tracking without stopping page, product or success-page order events. Later cart refreshes can recover without reloading the page. An explicitly disabled section still stops tracking, including when Magento's Cookie Restriction Mode denies consent.
+Redeploy Magento's static content and clear its cache:
 
-## No cart event is persisted
+```sh
+bin/magento setup:static-content:deploy -f
+bin/magento cache:flush
+```
 
-A tracking `2xx` only means accepted or enqueued. Check the Rails worker, the private anonymous event store and the exact scoped UUID/reference. Repeat the runbook with a fresh disposable browser session rather than copying a UUID into a URL.
+## Wrong product variant
 
-## Configurable child is wrong
+The bridge reads `super_attribute[...]` controls to identify the selected configurable variant. Custom selectors must update those fields when the shopper changes an option.
 
-Verify that all `super_attribute[...]` controls describe a complete, enabled child and that the child SKU/reference matches Magento. Swatches and custom theme renderers are not automatically covered by the Luma mapping.
+## Missing orders or imports
 
-## FPC behavior is unclear
+Confirm that the products are supported simple or configurable types and that Hellotext can reach the Magento API. Check the connection page for an import warning.
 
-Inspect the cache backend or cache-key instrumentation. `Cache-Control` or a `no-store` header alone does not establish whether a response was a MISS or HIT.
+If the problem continues, contact info@hellotext.com with the warning, affected store view, approximate time and diagnostic output.
