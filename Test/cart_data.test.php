@@ -26,7 +26,7 @@ namespace Magento\Store\Model {
     interface StoreManagerInterface { public function getStore(); }
 }
 namespace {
-    foreach (['Reference', 'Configuration', 'CartPayload', 'AnonymousSession'] as $file) { require __DIR__ . "/../Model/$file.php"; }
+    foreach (['Reference', 'Configuration', 'CartPayload'] as $file) { require __DIR__ . "/../Model/$file.php"; }
     require __DIR__ . '/../Plugin/CartData.php';
     $checkout = new \Magento\Checkout\Model\Session();
     $customer = new \Magento\Customer\Model\Session();
@@ -57,29 +57,24 @@ namespace {
         public function getAllVisibleItems() { return $this->items; }
     };
     $checkout->quote = $quote;
-    $anonymous = new \Hellotext\Tracking\Model\AnonymousSession($checkout);
     $cookies = new \Magento\Cookie\Helper\Cookie();
-    $plugin = new \Hellotext\Tracking\Plugin\CartData($checkout, $customer, $config, $stores, $anonymous, $cookies);
+    $plugin = new \Hellotext\Tracking\Plugin\CartData($checkout, $customer, $config, $stores, $cookies);
     $read = fn() => $plugin->afterGetSectionData(new \Magento\Checkout\CustomerData\Cart(), ['items' => ['native-preserved']]);
     $assert = function ($value) { if (!$value) { throw new \RuntimeException('Private cart assertion failed.'); } };
     $data = $read();
-    $assert($data['items'] === ['native-preserved'] && $data['hellotext']['items'] === [] && $data['hellotext']['anonymous']);
-    $id = $data['hellotext']['session'];
-    $assert($read()['hellotext']['session'] === $id);
+    $assert($data['items'] === ['native-preserved'] && $data['hellotext']['items'] === [] && $data['hellotext']['enabled']);
+    $assert(!array_key_exists('session', $data['hellotext']) && !array_key_exists('anonymous', $data['hellotext']));
     $quote->id = 17;
-    $assert($read()['hellotext']['session'] === $id);
     $assert($read()['hellotext']['checkout_reference'] === 'magento:magento-local:checkout:17');
     $assert($read()['hellotext']['context']['currency'] === 'USD');
     $assert(!array_key_exists('quote_id', $read()['hellotext']) && !array_key_exists('quoteId', $read()['hellotext']['context']));
-    // Cookie Restriction Mode without consent disables tracking and rotates the session; consent resumes it.
+    // Cookie Restriction Mode disables tracking until consent is granted.
     $cookies->denied = true;
     $assert($read()['hellotext'] === ['enabled' => false]);
     $cookies->denied = false;
     $resumed = $read()['hellotext'];
-    $assert($resumed['enabled'] === true && $resumed['session'] !== $id);
-    $id = $resumed['session'];
+    $assert($resumed['enabled'] === true && !array_key_exists('session', $resumed));
     $quote->id = null;
-    $assert($read()['hellotext']['session'] === $id);
     $assert($read()['hellotext']['checkout_reference'] === null);
     // A signed-in shopper keeps being tracked and is identified by their ID only, with their own quote.
     $customer->loggedIn = true;
@@ -121,9 +116,8 @@ namespace {
     $item->additional = true;
     $assert($read()['hellotext'] === ['enabled' => false]);
     $quote->items = [];
-    $checkout->data['hellotext_anonymous']['id'] = 'corrupt-legacy-id';
-    $assert($read()['hellotext']['session'] !== 'corrupt-legacy-id');
-    $assert(array_keys($read()['hellotext']) === ['enabled', 'anonymous', 'session', 'context', 'items', 'cart_ready', 'checkout_reference', 'identity']);
+    $assert($checkout->data === []);
+    $assert(array_keys($read()['hellotext']) === ['enabled', 'context', 'items', 'cart_ready', 'checkout_reference', 'identity']);
     $assert($read()['hellotext']['context'] === ['businessId' => 'public-business', 'apiRoot' => 'http://api.lvh.me:3200/v1', 'installationId' => 'magento-local', 'storeId' => '1', 'currency' => 'USD']);
     echo "Private cart configuration, authentication and scope checks passed.\n";
 }

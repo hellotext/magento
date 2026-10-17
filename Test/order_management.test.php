@@ -246,11 +246,11 @@ namespace {
     expectException(fn () => $manager->getOrder(9), LocalizedException::class);
     if (strlen(json_encode(wire($manager->getOrder(10), \Hellotext\Tracking\Api\Data\OrderPageInterface::class), JSON_THROW_ON_ERROR)) > 768 * 1024) throw new \RuntimeException('Single lookup exceeded the JSON byte budget');
 
-    // The session saved at placement travels with the snapshot; a malformed value never does.
+    // Both SDK-generated UUIDs and tracked-link sessions travel with the snapshot.
     $session = '123e4567-e89b-42d3-a456-426614174000';
-    [$manager] = fixture([order(1, extra: ['hellotext_session' => $session]), order(2, extra: ['hellotext_session' => 'not-a-uuid'])]);
+    [$manager] = fixture([order(1, extra: ['hellotext_session' => $session]), order(2, extra: ['hellotext_session' => 'AbC123xy']), order(3)]);
     $items = $manager->getOrders($cutoff)->getItems();
-    if ($items[0]->toArray()['session'] !== $session || $items[1]->toArray()['session'] !== null) throw new \RuntimeException('Placement session was not carried safely');
+    if ($items[0]->toArray()['session'] !== $session || $items[1]->toArray()['session'] !== 'AbC123xy' || $items[2]->toArray()['session'] !== null) throw new \RuntimeException('Placement session was not preserved');
 
     echo "Order history management checks passed.\n";
 }

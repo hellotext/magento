@@ -1,10 +1,11 @@
 <?php
-namespace Magento\Checkout\Model {
-    class Session {
-        public array $data = [];
-        public function getData($key) { return $this->data[$key] ?? null; }
-        public function setData($key, $value) { $this->data[$key] = $value; }
-        public function unsetData($key) { unset($this->data[$key]); }
+namespace Magento\Framework\Stdlib {
+    interface CookieManagerInterface { public function getCookie($name); }
+}
+namespace Magento\Cookie\Helper {
+    class Cookie {
+        public bool $denied = false;
+        public function isUserNotAllowSaveCookie() { return $this->denied; }
     }
 }
 namespace Magento\Framework\Event {
@@ -15,21 +16,32 @@ namespace Magento\Framework\Event {
     interface ObserverInterface { public function execute(Observer $observer); }
 }
 namespace {
-    require __DIR__ . '/../Model/AnonymousSession.php';
     require __DIR__ . '/../Observer/RememberOrderSession.php';
 
-    $order = new class { public array $data = []; public function setData($key, $value) { $this->data[$key] = $value; } };
-    $checkout = new \Magento\Checkout\Model\Session();
-    $anonymous = new \Hellotext\Tracking\Model\AnonymousSession($checkout);
-    $observer = new \Hellotext\Tracking\Observer\RememberOrderSession($anonymous);
+    $cookies = new class implements \Magento\Framework\Stdlib\CookieManagerInterface {
+        public ?string $session = null;
+        public function getCookie($name) {
+            if ($name !== 'hello_session') throw new \RuntimeException('Unexpected cookie');
+            return $this->session;
+        }
+    };
+    $consent = new \Magento\Cookie\Helper\Cookie();
+    $observer = new \Hellotext\Tracking\Observer\RememberOrderSession($cookies, $consent);
 
+    foreach ([null, '', str_repeat('a', 37), 'AbC123xy', '123e4567-e89b-42d3-a456-426614174000'] as $session) {
+        $cookies->session = $session;
+        $order = new class { public array $data = []; public function setData($key, $value) { $this->data[$key] = $value; } };
+        $observer->execute(new \Magento\Framework\Event\Observer($order));
+        $expected = $session !== null && $session !== '' && strlen($session) <= 36 ? ['hellotext_session' => $session] : [];
+        if ($order->data !== $expected) throw new \RuntimeException('The SDK cookie was not kept on the order.');
+    }
+
+    $order->data = [];
+    $consent->denied = true;
     $observer->execute(new \Magento\Framework\Event\Observer($order));
-    if ($order->data !== [] || $checkout->data !== []) throw new \RuntimeException('An untracked shopper must not get a session at placement.');
+    if ($order->data !== []) throw new \RuntimeException('Cookie restrictions must prevent attribution.');
 
-    $id = $anonymous->id(['store', '1', 'business', 'api', 'USD'], '42');
-    $observer->execute(new \Magento\Framework\Event\Observer($order));
-    if ($order->data !== ['hellotext_session' => $id]) throw new \RuntimeException('The storefront session was not kept on the order.');
-
+    $consent->denied = false;
     $failing = new class { public function setData($key, $value) { throw new \RuntimeException('save failed'); } };
     $observer->execute(new \Magento\Framework\Event\Observer($failing));
     $observer->execute(new \Magento\Framework\Event\Observer(null));

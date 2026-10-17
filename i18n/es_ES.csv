@@ -30,3 +30,5 @@
 "Order snapshot is unsupported or invalid.","Los datos del pedido no son compatibles o no son válidos."
 "Hellotext order configuration is invalid for this store.","La configuración de pedidos de Hellotext no es válida para esta tienda."
 "Hellotext order configuration is invalid for this website.","La configuración de pedidos de Hellotext no es válida para este sitio web."
+"Request at most 100 positive product IDs.","Solicita como máximo 100 ID de producto positivos."
+"Inventory did not return a result for every product.","El inventario no devolvió un resultado para cada producto."

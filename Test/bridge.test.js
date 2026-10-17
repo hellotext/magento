@@ -27,7 +27,7 @@ function runBridge(context, identity = null, tracking = {}) {
         configuration = { installationId: 'store-one', storeId: '1', currency: 'USD', ...value };
         return factory({
         getInitCustomerData: () => Promise.resolve(),
-        reload: async () => ({ cart: { hellotext: { enabled: true, anonymous: true, cart_ready: true, session: anonymousSession, context: configuration, identity, items: [], ...tracking } }, customer: {} }),
+        reload: async () => ({ cart: { hellotext: { enabled: true, cart_ready: true, context: configuration, identity, items: [], ...tracking } }, customer: {} }),
         get: () => ({ subscribe: () => {} })
         }, emptyTracker)(configuration);
     });
@@ -81,6 +81,8 @@ test('initializes once and sends the canonical product view payload', async () =
     assert.equal(calls[1][1], 'public-business');
     assert.equal(calls[1][2].apiRoot, 'http://api.lvh.me:3200/v1');
     assert.equal(calls[1][2].push, false);
+    assert.equal('session' in calls[1][2], false);
+    assert.equal('autoGenerateSession' in calls[1][2], false);
     ['popup', 'webchat', 'whatsappWidget'].forEach((widget) => assert.equal(widget in calls[1][2], false));
     assert.equal(calls.find(([name, action]) => name === 'track' && action === 'page.viewed')[2].object_parameters.source, 'magento');
     assert.equal(calls.filter(([name, action]) => name === 'track' && action === 'page.viewed').length, 1);
