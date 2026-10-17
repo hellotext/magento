@@ -9,7 +9,7 @@ Hellotext for Magento 2 connects one Magento website to one Hellotext business. 
 - Luma theme
 - An HTTPS storefront with a valid certificate, and a Magento REST API that Hellotext can reach
 
-Other Magento versions, editions and themes are supported only after they have been tested. See [compatibility](docs/compatibility.md).
+Other Magento versions, editions and themes are supported only after they have been tested.
 
 ## Install
 
@@ -26,7 +26,6 @@ Then follow [Connect Magento to Hellotext](docs/getting-started.md).
 | Topic | Document |
 | --- | --- |
 | Connect a store and import records | [Getting started](docs/getting-started.md) |
-| Supported versions and limits | [Compatibility](docs/compatibility.md) |
 | Open prepared carts in the storefront | [Checkout links](docs/checkout-links.md) |
 | Check product and variant availability | [Stock availability](docs/stock-availability.md) |
 | Diagnose problems | [Troubleshooting](docs/troubleshooting.md) |

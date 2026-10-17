@@ -30,4 +30,4 @@ First public release.
 - Connection through the declared `Hellotext` integration (`etc/integration.xml`) and `bin/magento hellotext:connect <code>`; Hellotext applies its settings through a `Hellotext_Tracking::configure` Web API and verifies the store through a signed status route.
 - `bin/magento hellotext:diagnose` reports versions, configuration validity and the integration state.
 - `bin/magento module:uninstall Hellotext_Tracking --remove-data` removes the integration, its OAuth consumer, the module configuration and its schema.
-- Supported: Magento Open Source 2.4.7 with PHP 8.2 and 8.3 on the documented Luma baseline. See [compatibility](docs/compatibility.md).
+- Supported: Magento Open Source 2.4.7 with PHP 8.2 and 8.3 on the documented Luma baseline.
