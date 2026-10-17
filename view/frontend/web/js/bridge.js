@@ -1,7 +1,7 @@
 define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker'], function (customerData, createCartTracker) {
     'use strict';
 
-    var sdkUrl = 'https://cdn.jsdelivr.net/npm/@hellotext/hellotext@2/dist/hellotext.min.js';
+    var sdkUrl = 'https://cdn.jsdelivr.net/npm/@hellotext/hellotext/dist/hellotext.min.js';
 
     return function (config) {
         if (!hasSafeConfig(config) || window.hellotextMagentoStarted) {
