@@ -8,7 +8,7 @@ You need access to the Magento server and permission to manage integrations in H
 2. Run the commands shown there from your Magento installation directory:
 
    ```sh
-   composer require hellotext/module-tracking
+   composer require hellotext/magento
    bin/magento module:enable Hellotext_Tracking
    bin/magento setup:upgrade
    bin/magento setup:di:compile

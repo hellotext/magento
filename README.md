@@ -11,7 +11,7 @@ Connect your Magento store to Hellotext to track storefront activity and orders,
 ## Install
 
 ```sh
-composer require hellotext/module-tracking
+composer require hellotext/magento
 ```
 
 Open **Settings → Integrations → Magento** in Hellotext and follow the commands to enable the module and connect your store. See [Getting started](docs/getting-started.md) for the full instructions.

@@ -1,5 +1,5 @@
 {
-  "name": "hellotext/module-tracking",
+  "name": "hellotext/magento",
   "description": "Connect Magento Open Source stores to Hellotext: storefront activity, customer identity, orders and catalog/customer import.",
   "type": "magento2-module",
   "version": "0.9.0",

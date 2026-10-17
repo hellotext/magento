@@ -18,7 +18,7 @@ class VersionInformation
             return null;
         }
         try {
-            return \Composer\InstalledVersions::getPrettyVersion('hellotext/module-tracking') ?: null;
+            return \Composer\InstalledVersions::getPrettyVersion('hellotext/magento') ?: null;
         } catch (\OutOfBoundsException) {
             // app/code source mounts do not have a Composer package version.
             return null;
