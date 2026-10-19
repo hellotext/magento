@@ -73,7 +73,7 @@ class StockManagement implements StockManagementInterface
 
         $salable = [];
         if ($skus !== []) {
-            $salable = $this->modules->isEnabled('Magento_InventorySalesApi')
+            $salable = $this->inventoryAvailable()
                 ? $this->inventorySalability(array_values($skus), (int) $store->getWebsiteId())
                 : $this->legacySalability(array_values($skus));
             foreach ($skus as $sku) {
@@ -89,6 +89,14 @@ class StockManagement implements StockManagementInterface
             $productIds
         );
         return new StockResult($installation, $storeId, $business, $items);
+    }
+
+    // Removing the MSI packages can leave a stale enabled flag in app/etc/config.php, so its classes must exist too.
+    private function inventoryAvailable(): bool
+    {
+        return $this->modules->isEnabled('Magento_InventorySalesApi')
+            && interface_exists(StockResolverInterface::class)
+            && interface_exists(AreProductsSalableInterface::class);
     }
 
     /** @return array<string, bool> */
