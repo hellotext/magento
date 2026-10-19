@@ -17,6 +17,11 @@
                 <value id="hellotext-assets" type="host">https://www.hellotext.com</value>
             </values>
         </policy>
+        <policy id="font-src">
+            <values>
+                <value id="hellotext-assets" type="host">https://www.hellotext.com</value>
+            </values>
+        </policy>
         <policy id="connect-src">
             <values>
                 <value id="hellotext-production-api" type="host">https://api.hellotext.com</value>

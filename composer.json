@@ -2,7 +2,7 @@
   "name": "hellotext/magento",
   "description": "Connect Magento Open Source stores to Hellotext: storefront activity, customer identity, orders and catalog/customer import.",
   "type": "magento2-module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "proprietary",
   "keywords": [
     "magento",
@@ -24,6 +24,7 @@
     "magento/framework": "^103.0",
     "magento/module-backend": "^102.0",
     "magento/module-catalog": "^104.0",
+    "magento/module-catalog-inventory": "^100.4",
     "magento/module-checkout": "^100.4",
     "magento/module-config": "^101.2",
     "magento/module-configurable-product": "^100.4",
@@ -31,12 +32,14 @@
     "magento/module-csp": "^100.4",
     "magento/module-customer": "^103.0",
     "magento/module-integration": "^100.4",
-    "magento/module-inventory-sales-api": "^1.2",
     "magento/module-newsletter": "^100.4",
     "magento/module-quote": "^101.2",
     "magento/module-sales": "^103.0",
     "magento/module-store": "^101.1",
     "magento/module-webapi": "^100.4"
+  },
+  "suggest": {
+    "magento/module-inventory-sales-api": "Checks product availability in each website's stock when Magento Inventory (MSI) is installed."
   },
   "autoload": {
     "files": [
