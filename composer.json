@@ -20,7 +20,7 @@
     "docs": "https://github.com/hellotext/magento/blob/main/docs/getting-started.md"
   },
   "require": {
-    "php": ">=8.2 <8.4",
+    "php": ">=8.2 <8.5",
     "magento/framework": "^103.0",
     "magento/module-backend": "^102.0",
     "magento/module-catalog": "^104.0",
