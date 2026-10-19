@@ -30,7 +30,7 @@ test('status is a signed, store-scoped, safe version handshake', () => {
   assert.match(data, /concrete DTO deliberately returns \?string/);
   assert.doesNotMatch(data, /get(?:ApiRoot|Token|Secret|Customer|Order|Session)/);
   const sdkVersion = version.match(/SDK_VERSION = '([^']+)'/)[1];
-  // The reported SDK channel matches the unversioned CDN URL used by the bridge.
-  assert.equal(sdkVersion, 'latest');
-  assert.match(bridge, /https:\/\/cdn\.jsdelivr\.net\/npm\/@hellotext\/hellotext\/dist\/hellotext\.min\.js/);
+  // The reported SDK channel matches the major version pinned in the bridge's CDN URL.
+  assert.equal(sdkVersion, '2.x');
+  assert.match(bridge, /https:\/\/cdn\.jsdelivr\.net\/npm\/@hellotext\/hellotext@2\/dist\/hellotext\.min\.js/);
 });
