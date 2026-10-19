@@ -1,8 +1,7 @@
 define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker'], function (customerData, createCartTracker) {
     'use strict';
 
-    // Pinned to the major version, like the VTEX integration: 2.x releases arrive without a module release.
-    var sdkUrl = 'https://cdn.jsdelivr.net/npm/@hellotext/hellotext@2/dist/hellotext.min.js';
+    var sdkUrl = 'https://cdn.jsdelivr.net/npm/@hellotext/hellotext/dist/hellotext.min.js';
 
     return function (config) {
         if (!hasSafeConfig(config) || window.hellotextMagentoStarted) {
