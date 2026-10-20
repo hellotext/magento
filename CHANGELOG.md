@@ -1,6 +1,12 @@
 # Changelog
 
-## Unreleased
+## 1.0.1 - 2026-10-19
+
+- Install on stores without Magento Inventory (MSI): stock checks use Magento's default stock when MSI is not enabled.
+- Allow the fonts of Hellotext popups, webchat and forms in the Content Security Policy.
+- Allow PHP 8.4, used by Magento 2.4.8.
+
+## 1.0.0 - 2026-10-17
 
 - Track page views, products, carts and checkout activity through Hellotext.js.
 - Display Hellotext popups, webchat, WhatsApp widgets and forms.

@@ -1,6 +1,6 @@
 # Running tests
 
-Use Node.js 22 and PHP 8.2 or 8.3. From the module directory:
+Use Node.js 22 and PHP 8.2, 8.3 or 8.4. From the module directory:
 
 ```sh
 composer validate

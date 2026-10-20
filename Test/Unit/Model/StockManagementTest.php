@@ -8,8 +8,12 @@ use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Module\Manager as ModuleManager;
+use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\Webapi\Rest\Response;
 use Magento\InventoryApi\Api\Data\StockInterface;
 use Magento\InventorySalesApi\Api\AreProductsSalableInterface;
@@ -29,6 +33,8 @@ class StockManagementTest extends TestCase
     private Collection $collection;
     private AreProductsSalableInterface $salability;
     private StockResolverInterface $resolver;
+    private StockRegistryInterface $legacyStock;
+    private bool $inventoryEnabled = true;
 
     protected function setUp(): void
     {
@@ -61,7 +67,35 @@ class StockManagementTest extends TestCase
         $response->expects(self::once())->method('setHeader')->with(
             'Cache-Control', 'max-age=0, must-revalidate, no-cache, no-store', true
         );
-        $this->subject = new StockManagement($collections, $config, $stores, $this->resolver, $this->salability, $response);
+        $modules = $this->createMock(ModuleManager::class);
+        $modules->method('isEnabled')->with('Magento_InventorySalesApi')->willReturnCallback(fn (): bool => $this->inventoryEnabled);
+        $objects = $this->createMock(ObjectManagerInterface::class);
+        $objects->method('get')->willReturnMap([
+            [StockResolverInterface::class, $this->resolver],
+            [AreProductsSalableInterface::class, $this->salability],
+        ]);
+        $this->legacyStock = $this->createMock(StockRegistryInterface::class);
+        $this->subject = new StockManagement($collections, $config, $stores, $response, $modules, $objects, $this->legacyStock);
+    }
+
+    public function testFallsBackToTheGlobalStockWhenInventoryIsDisabled(): void
+    {
+        $this->inventoryEnabled = false;
+        $this->collection->method('getItems')->willReturn([
+            $this->product(11, 'SIMPLE'), $this->product(12, 'GONE'), $this->product(13, 'SOLD-OUT')
+        ]);
+        $this->legacyStock->method('getProductStockStatusBySku')->willReturnCallback(static function (string $sku): int {
+            if ($sku === 'GONE') {
+                throw new NoSuchEntityException(__('Missing'));
+            }
+            return $sku === 'SIMPLE' ? 1 : 0;
+        });
+        $this->resolver->expects(self::never())->method('execute');
+        $this->salability->expects(self::never())->method('execute');
+
+        $result = $this->subject->getStock([11, 12, 13]);
+
+        self::assertSame([true, false, false], array_map(static fn ($item) => $item->getSalable(), $result->getItems()));
     }
 
     public function testChecksSimpleProductsParentsAndExactChildrenTogetherInTheWebsiteStock(): void

@@ -49,17 +49,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['8.2', '8.3']
+        php-version: ['8.2', '8.3', '8.4']
     steps:
       - uses: actions/checkout@v4
         with:
           path: module
+      # Magento 2.4.7 does not run on PHP 8.4; that version gets the lint and isolated checks only.
       - uses: actions/checkout@v4
+        if: matrix.php-version != '8.4'
         with:
           repository: magento/magento2
           ref: 2.4.7-p10
           path: magento
       - uses: actions/checkout@v4
+        if: matrix.php-version != '8.4'
         with:
           repository: magento/inventory
           ref: 1.2.7-p10
@@ -77,12 +80,14 @@ jobs:
           find Api Block Console Controller Model Observer Plugin Setup Test view registration.php \( -name '*.php' -o -name '*.phtml' \) -print0 | xargs -0 -n1 php -l
           for test in Test/*.test.php; do php "$test"; done
       - name: Install Magento unit test dependencies
+        if: matrix.php-version != '8.4'
         run: |
           cp -R ../inventory/InventoryApi ../inventory/InventorySalesApi ../magento/app/code/Magento/
           mkdir -p ../magento/app/code/Hellotext
           ln -s "$GITHUB_WORKSPACE/module" ../magento/app/code/Hellotext/Tracking
           composer --working-dir=../magento install --no-interaction --prefer-dist --no-progress
       - name: Run PHPUnit against Magento 2.4.7-p10
+        if: matrix.php-version != '8.4'
         working-directory: magento
         run: vendor/bin/phpunit -c dev/tests/unit/phpunit.xml.dist app/code/Hellotext/Tracking/Test/Unit
 

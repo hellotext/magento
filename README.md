@@ -4,8 +4,9 @@ Connect your Magento store to Hellotext to track storefront activity and orders,
 
 ## Requirements
 
-- Magento Open Source 2.4.7
-- PHP 8.2 or 8.3
+- Magento Open Source 2.4 (tested on 2.4.7)
+- PHP 8.2, 8.3 or 8.4
+- Magento Inventory (MSI) is optional; without it, stock checks use Magento's default stock
 - An HTTPS storefront and a Magento API reachable by Hellotext
 
 ## Install
