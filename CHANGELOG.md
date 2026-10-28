@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2 - 2026-10-28
+
+- `bin/magento module:uninstall Hellotext_Tracking --remove-data` now removes the Hellotext integration, its OAuth consumer and token, and the module configuration. Before, Magento skipped the module's uninstall script because the module was not registered in `setup_module`.
+
 ## 1.0.1 - 2026-10-19
 
 - Install on stores without Magento Inventory (MSI): stock checks use Magento's default stock when MSI is not enabled.
