@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.0.3 - 2026-11-03
 
 - Report the page section (homepage, product collection or product details) from Magento's route, so page views, product views and Webchat messages say where they happened.
 
