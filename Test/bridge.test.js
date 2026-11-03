@@ -124,6 +124,30 @@ test('identifies an authenticated customer before storefront events and keeps tr
     assert.deepEqual(calls.filter(([name]) => name === 'track').map(([, action]) => action), ['page.viewed', 'product.viewed']);
 });
 
+test('sets the page section on the page each initialize builds, before storefront events', async () => {
+    const sections = [];
+    let initialize;
+    const sdk = {
+        initialize: async () => { sdk.page = { section: null }; },
+        track: async (action) => { sections.push([action, sdk.page.section]); return { failed: false }; }
+    };
+    runBridge({
+        window: {},
+        document: {
+            querySelector: () => productElement({ name: 'Shirt', reference: 'magento:store-one:product:42', sku: 'TS-42', source: 'magento' }),
+            querySelectorAll: () => [],
+            addEventListener: () => {}
+        },
+        console, Promise, URL, setTimeout,
+        require: (_deps, callback) => callback(sdk),
+        define: (_deps, factory) => { initialize = factory(); }
+    });
+
+    initialize({ businessId: 'public-business', apiRoot: 'http://api.lvh.me:3200/v1', pageSection: 'product_details' });
+    await new Promise(setImmediate);
+    assert.deepEqual(sections, [['page.viewed', 'product_details'], ['product.viewed', 'product_details']]);
+});
+
 test('product observation URL excludes query parameters and fragments', async () => {
     const calls = [];
     let initialize;

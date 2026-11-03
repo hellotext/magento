@@ -84,4 +84,15 @@ class Init extends Template
             && $request->getControllerName() === 'index'
             && $request->getActionName() === 'index';
     }
+
+    public function getPageSection(): ?string
+    {
+        $request = $this->getRequest();
+
+        return [
+            'cms/index/index' => 'homepage',
+            'catalog/category/view' => 'product_collection',
+            'catalog/product/view' => 'product_details',
+        ][$request->getRouteName() . '/' . $request->getControllerName() . '/' . $request->getActionName()] ?? null;
+    }
 }

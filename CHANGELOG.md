@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Report the page section (homepage, product collection or product details) from Magento's route, so page views, product views and Webchat messages say where they happened.
+
 ## 1.0.2 - 2026-10-28
 
 - `bin/magento module:uninstall Hellotext_Tracking --remove-data` now removes the Hellotext integration, its OAuth consumer and token, and the module configuration. Before, Magento skipped the module's uninstall script because the module was not registered in `setup_module`.
