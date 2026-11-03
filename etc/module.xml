@@ -3,7 +3,7 @@
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
     <!-- setup_version registers the module in setup_module, which is the only list Magento reads to run
          Setup/Uninstall.php when the module is uninstalled with its data. Declarative schema alone never adds it. -->
-    <module name="Hellotext_Tracking" setup_version="1.0.2">
+    <module name="Hellotext_Tracking" setup_version="1.0.3">
         <sequence>
             <module name="Magento_Catalog"/>
             <module name="Magento_CatalogInventory"/>

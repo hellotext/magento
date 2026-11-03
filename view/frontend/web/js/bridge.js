@@ -76,7 +76,12 @@ define(['Magento_Customer/js/customer-data', 'Hellotext_Tracking/js/cart-tracker
                 apiRoot: config.apiRoot,
                 // Web push needs a service worker served from the store's own origin.
                 push: false
-            })).then(function () { session = Hellotext.session; });
+            })).then(function () {
+                session = Hellotext.session;
+                // Initializing builds a new page, so set its section again: every event of this page reports it,
+                // Webchat messages included.
+                if (Hellotext.page) { Hellotext.page.section = config.pageSection; }
+            });
         }
 
         function synchronizeSession(Hellotext) {

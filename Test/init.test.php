@@ -34,4 +34,13 @@ namespace {
         if ($block->hasSafeConfig() !== $expected) { throw new \RuntimeException('Checkout route guard failed.'); }
     }
     echo "Storefront checkout-route guards passed.\n";
+    foreach ([['cms', 'index', 'index', 'homepage'], ['catalog', 'category', 'view', 'product_collection'],
+              ['catalog', 'product', 'view', 'product_details'], ['cms', 'page', 'view', null], ['catalogsearch', 'result', 'index', null]]
+             as [$route, $controller, $action, $expected]) {
+        $context->route = $route;
+        $context->controller = $controller;
+        $context->action = $action;
+        if ($block->getPageSection() !== $expected) { throw new \RuntimeException('Page section mapping failed.'); }
+    }
+    echo "Storefront page sections passed.\n";
 }
