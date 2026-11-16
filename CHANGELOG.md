@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.4 - 2026-11-14
+
+- Allow PHP 8.5, required by Magento 2.4.9.
+
 ## 1.0.3 - 2026-11-03
 
 - Report the page section (homepage, product collection or product details) from Magento's route, so page views, product views and Webchat messages say where they happened.
